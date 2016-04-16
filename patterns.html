@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+  <meta charset="UTF-8">
+  <title>D3 Bar Chart</title>
+  <script src="js/d3.v3.min.js" charset="utf-8"></script>
+  <script src="js/export-svg.js"></script>
+
+  </head>
+
+<body>
+<svg id="drawing">
+<style>
+  .structure {
+    stroke: black;
+    stroke-width: 4px;
+    fill: none;
+  }
+  </style>
+</svg>
+
+<script>
+/*       /
+ *    1 /|            (0,2s)___(1,2s)                    .  .    .  .
+ *     / | sin 60   (-c,s) /   \  (1+c, s)     |\       .    .  .    .
+ *    /__|                 \___/               x  y      o  .    o  .
+ *   cos 60              (0,0) (1,0)           |    \   .    o  .
+ *                                                       o  .    o  .
+ */
+
+var c = Math.cos(Math.PI/3), s = Math.sin(Math.PI/3);
+var points = [[0,0], [1,0], [1+c, s], [1, 2*s], [0, 2*s], [-c,s]];
+
+var x = [0, 2*s];
+var y = [1+c, s];
+
+var positions = [];
+
+var smult = function (s, v)   { return [s * v[0], s * v[1]]; }
+var add   = function (v1, v2) { return [v1[0] + v2[0], v1[1] + v2[1]]; }
+
+for (var i = 0; i < 20; i++)
+  for (var j = -Math.floor(i/2); j < 10 - Math.floor(i/2); j++)
+    positions.push(add(smult(j, x), smult(i, y)));
+
+var svg = d3.select("#drawing").selectAll('path').data(positions);
+var svge = svg.enter();
+
+var line = d3.svg.line()
+  .x(function (d) { return d[0]; })
+  .y(function (d) { return d[1]; })
+  .interpolate("linear-closed")
+;
+
+function pointsOf(offset) {
+  return line(points.map(function (p) { return smult(10,add(p, offset)); }));
+}
+
+svge.append("path")
+  .attr("class", "structure")
+  .attr("d", pointsOf)
+;
+
+d3.select("body").append("a")
+  .text("download svg")
+  .attr("href", svgAsLink(d3.select("svg").node()))
+  .attr("download","drawing.svg")
+;
+</script>
+
+</body>
+
+</html>
+
