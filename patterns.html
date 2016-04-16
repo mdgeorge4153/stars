@@ -105,10 +105,9 @@ var y = [1+c, s];
 
 var positions = [];
 
-var theta = function (p) { return Math.PI/2.5; }
-var delta = function (p) { return 0; }
-
-var fillPoints = fill(points,theta,delta,[1,2,3,4,5,0]);
+var theta = function (p) { return Math.PI*(p[0]/8 + 0)/6; };
+var delta = function (p) { return p[1]/15; };
+var conn  = [1,2,3,4,5,0];
 
 for (var i = 0; i < 20; i++)
   for (var j = -Math.floor(i/2); j < 10 - Math.floor(i/2); j++)
@@ -130,12 +129,15 @@ function pointsOf(offset) {
 svge.append("path")
   .attr("class", "structure")
   .attr("fill", "none")
-  .attr("stroke", "light gray")
+  .attr("stroke", "gray")
   .attr("d", pointsOf)
 ;
 
 function fillPointsOf(offset) {
-  return line(fillPoints.map(function(p) { return add(p, offset); }));
+  var p = points.map(function(p) { return add(p,offset); });
+  var f = fill(p, theta, delta, conn);
+
+  return line(f);
 }
 
 svge.append("path")
