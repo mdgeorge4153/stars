@@ -7,21 +7,88 @@
   <title>D3 Bar Chart</title>
   <script src="js/d3.v3.min.js" charset="utf-8"></script>
   <script src="js/export-svg.js"></script>
+  <script src="js/geometry.js"></script>
 
   </head>
 
 <body>
-<svg id="drawing">
-<style>
-  .structure {
-    stroke: black;
-    stroke-width: 4px;
-    fill: none;
-  }
-  </style>
-</svg>
+<svg id="drawing"></svg>
 
 <script>
+/**
+ *   p[0] _____ p[1]
+ *       /_/∧\_\
+ *      /   |   \
+ *p[5] /\ angle /\ p[2]
+ *     \/       \/
+ *      \__   __/ <--- delta
+ *       \_\_/_/
+ *  p[4]      p[3]
+ *
+ * the inside edges are output by fill with
+ *    border: p
+ *    theta:  function (p) { return degreesToRadians(60); }
+ *    delta:  function (p) { return 0.3; }
+ *    connections: [1,2,3,4,5,0]
+ *
+ * border is a list of points forming the polygon border.
+ * theta is a function giving the angle between the edges at the contact point
+ * delta is a function giving the width of the gap between edges at the contact
+ *   point
+ * connections is an array of indices; one for each edge, conn[i] = j then the
+ *   connection coming out of edge i should connect to edge j.
+ */
+function fill(p, theta, delta, connections) {
+  var N = p.length;
+
+  var endpoints = [];
+  for (var i = 0; i < N; i++) {
+    /*           |<-delta->|
+     * x---------x---------x----------x
+     * p[i]   e[i][0]   e[i][1]    p[i+1]
+     */
+    var p0 = p[i], p1 = p[(i+1)%N];
+
+    var center = add(smult(.5, p0), smult(.5, p1));
+
+    var diff = sub(p1,p0);
+    var dist = Math.sqrt(dot(diff,diff));
+    var unit = smult(delta(center)/(dist*2), diff);
+
+    endpoints.push([add(center, unit), sub(center,unit)]);
+  }
+
+  console.log(endpoints);
+
+  var result = [];
+  for (var i = 0; i < N; i++) {
+    var e0 = endpoints[i][1], e1 = endpoints[connections[i]][0];
+    var p0 = p[(i+1)%N],      p1 = p[connections[i]];
+
+    /*         ?          |
+     *         o----------x e1
+     *        /        \θ1|
+     *       /\         \ |
+     *      /θ0\          x p1
+     *  ___x______x     
+     *    e0      p0
+     */
+
+    var d0 = rotate(sub(p0,e0),  theta(e0)),
+        d1 = rotate(sub(p1,e1), -theta(e1));
+
+    result.push(e0);
+    result.push(intersect(e0,d0,e1,d1));
+    result.push(e1);
+  }
+
+  return result;
+}
+
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+
 /*       /
  *    1 /|            (0,2s)___(1,2s)                    .  .    .  .
  *     / | sin 60   (-c,s) /   \  (1+c, s)     |\       .    .  .    .
@@ -38,8 +105,10 @@ var y = [1+c, s];
 
 var positions = [];
 
-var smult = function (s, v)   { return [s * v[0], s * v[1]]; }
-var add   = function (v1, v2) { return [v1[0] + v2[0], v1[1] + v2[1]]; }
+var theta = function (p) { return Math.PI/2.5; }
+var delta = function (p) { return 0; }
+
+var fillPoints = fill(points,theta,delta,[1,2,3,4,5,0]);
 
 for (var i = 0; i < 20; i++)
   for (var j = -Math.floor(i/2); j < 10 - Math.floor(i/2); j++)
@@ -49,25 +118,39 @@ var svg = d3.select("#drawing").selectAll('path').data(positions);
 var svge = svg.enter();
 
 var line = d3.svg.line()
-  .x(function (d) { return d[0]; })
-  .y(function (d) { return d[1]; })
+  .x(function (d) { return 15*d[0]; })
+  .y(function (d) { return 15*d[1]; })
   .interpolate("linear-closed")
 ;
 
 function pointsOf(offset) {
-  return line(points.map(function (p) { return smult(10,add(p, offset)); }));
+  return line(points.map(function (p) { return add(p, offset); }));
 }
 
 svge.append("path")
   .attr("class", "structure")
+  .attr("fill", "none")
+  .attr("stroke", "light gray")
   .attr("d", pointsOf)
+;
+
+function fillPointsOf(offset) {
+  return line(fillPoints.map(function(p) { return add(p, offset); }));
+}
+
+svge.append("path")
+  .attr("class", "fill")
+  .attr("fill", "none")
+  .attr("stroke", "black")
+  .attr("d", fillPointsOf)
 ;
 
 d3.select("body").append("a")
   .text("download svg")
   .attr("href", svgAsLink(d3.select("svg").node()))
-  .attr("download","drawing.svg")
+  .attr("download","pattern.svg")
 ;
+
 </script>
 
 </body>
