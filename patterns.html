@@ -50,7 +50,7 @@
   <tr><td class="rotate">
         <div><span>lock δ: <input type="checkbox" name="delta-left-lock"/>&nbsp;
                    lock θ: <input type="checkbox" name="theta-left-lock"/></span></div></td>
-      <td colspan="3"><svg id="drawing" width="400" height="300"></svg></td>
+      <td colspan="3"><svg id="drawing" width="500" height="300"></svg></td>
       <td></td></tr>
 
   <tr><td>δ</td> <td><input type="range" name="delta00" /></td>
@@ -63,6 +63,10 @@
   </table>
 
 <script>
+
+function getX (p) { return p[0]; }
+function getY (p) { return p[1]; }
+
 /**
  *   p[0] _____ p[1]
  *       /_/∧\_\
@@ -79,12 +83,16 @@
  *    delta:  function (p) { return 0.3; }
  *    connections: [1,2,3,4,5,0]
  *
- * border is a list of points forming the polygon border.
- * theta is a function giving the angle between the edges at the contact point
- * delta is a function giving the width of the gap between edges at the contact
+ * - border is a list of points forming the polygon border.
+ * - theta is a function giving the angle between the edges at the contact point
+ * - delta is a function giving the width of the gap between edges at the contact
  *   point
- * connections is an array of indices; one for each edge, conn[i] = j then the
- *   connection coming out of edge i should connect to edge j.
+ * - connections is an array of indices; one for each edge, conn[i] = j then the
+ *     connection coming out of edge i should connect to edge j.
+ *
+ * delta and theta's inputs should be scaled similarly to p
+ * delta's outputs should be scaled similarly to p
+ * theta's outputs should be in [0, π]
  */
 function fill(p, theta, delta, connections) {
   var N = p.length;
@@ -105,8 +113,6 @@ function fill(p, theta, delta, connections) {
 
     endpoints.push([add(center, unit), sub(center,unit)]);
   }
-
-  console.log(endpoints);
 
   var result = [];
   for (var i = 0; i < N; i++) {
@@ -146,58 +152,92 @@ function fill(p, theta, delta, connections) {
  */
 
 var c = Math.cos(Math.PI/3), s = Math.sin(Math.PI/3);
-var points = [[0,0], [1,0], [1+c, s], [1, 2*s], [0, 2*s], [-c,s]];
+var shape = [[0,0], [1,0], [1+c, s], [1, 2*s], [0, 2*s], [-c,s]];
 
 var x = [0, 2*s];
 var y = [1+c, s];
 
+/** positions: [0,0], [1,0], [2,-1], ... */
 var positions = [];
-
-var theta = function (p) { return Math.PI*(p[0]/8 + 0)/6; };
-var delta = function (p) { return p[1]/15; };
-var conn  = [1,2,3,4,5,0];
-
 for (var i = 0; i < 20; i++)
   for (var j = -Math.floor(i/2); j < 10 - Math.floor(i/2); j++)
     positions.push(add(smult(j, x), smult(i, y)));
 
-var svg = d3.select("#drawing").selectAll('path').data(positions);
-var svge = svg.enter();
+var minX = d3.min(shape, getX) + d3.min(positions, getX);
+var maxX = d3.max(shape, getX) + d3.max(positions, getX);
+var minY = d3.min(shape, getY) + d3.min(positions, getY);
+var maxY = d3.max(shape, getY) + d3.max(positions, getY);
+
+// var theta = function (p) { return Math.PI*(p[0]/8 + 0)/6; };
+var thetaScale = d3.scale.linear().domain([minX,maxX]).range([0,Math.PI]);
+var theta = function (p) { return 0.5+Math.PI/3*Math.sin(thetaScale(p[0])); };
+
+// var delta = function (p) { return p[1]/15; };
+var deltaScale = d3.scale.linear().domain([minY,maxY]).range([0,Math.PI]);
+var delta = function (p) { return Math.sin(deltaScale(p[1])); };
+
+var conn  = [1,2,3,4,5,0];
+
+/******************************************************************************/
 
 var line = d3.svg.line()
-  .x(function (d) { return 15*d[0]; })
-  .y(function (d) { return 15*d[1]; })
+  .x(getX)
+  .y(getY)
   .interpolate("linear-closed")
 ;
 
 function pointsOf(offset) {
-  return line(points.map(function (p) { return add(p, offset); }));
+  return line(shape.map(function (p) { return add(p, offset); }));
 }
 
-svge.append("path")
-  .attr("class", "structure")
-  .attr("fill", "none")
-  .attr("stroke", "none")
-  .attr("d", pointsOf)
-;
-
 function fillPointsOf(offset) {
-  var p = points.map(function(p) { return add(p,offset); });
+  var p = shape.map(function(p) { return add(p,offset); });
   var f = fill(p, theta, delta, conn);
 
   return line(f);
 }
 
-svge.append("path")
-  .attr("class", "fill")
-  .attr("fill", "none")
-  .attr("stroke", "black")
-  .attr("d", fillPointsOf)
-;
+/******************************************************************************/
 
-d3.select("#download")
-  .attr("href", svgAsLink(d3.select("svg").node()))
-;
+function drawChart(svg) {
+  var xfactor = svg.attr('width' )/(maxX - minX);
+  var yfactor = svg.attr('height')/(maxY - minY);
+  var factor  = xfactor < yfactor ? xfactor : yfactor;
+  
+  var area  = svg.selectAll('g').data([0]);
+  
+  area.enter().append('g');
+
+  area
+    .attr('transform', 'scale(' + factor + ') '
+  		   + 'translate(' + (-minX+.1) + ',' + (-minY+.1) + ')')
+  ;
+  
+  var path  = area.selectAll('path').data(positions);
+  
+  path.enter().append("path")
+    .attr("class", "structure")
+    .attr("fill", "none")
+    .attr("stroke", "gray")
+    .attr("stroke-width", "0.02")
+    .attr("d", pointsOf)
+  ;
+  
+  path.enter().append("path")
+    .attr("class", "fill")
+    .attr("fill", "none")
+    .attr("stroke", "black")
+    .attr("stroke-width", "0.02")
+  ;
+  
+  path.attr("d", fillPointsOf);
+  
+  d3.select("#download")
+    .attr("href", svgAsLink(d3.select("svg").node()))
+  ;
+}
+
+d3.select("#drawing").call(drawChart);
 
 </script>
 
