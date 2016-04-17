@@ -4,15 +4,63 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>D3 Bar Chart</title>
+  <title>Islamic star pattern generator</title>
   <script src="js/d3.v3.min.js" charset="utf-8"></script>
   <script src="js/export-svg.js"></script>
   <script src="js/geometry.js"></script>
 
+  <style>
+    table {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    td {
+      text-align: center;
+    }
+
+    .rotate {
+      width: 1em; white-space: nowrap;
+    }
+
+    .rotate > div {
+      width: 1.5em; height: 150px;
+      transform: rotate(-90deg) ;
+      transform-origin: bottom left 0;
+    }
+
+    .rotate > div > span {
+      position: relative;
+      top: 100%;
+    }
+
+  </style>
+
   </head>
 
 <body>
-<svg id="drawing"></svg>
+
+<table>
+  <tr><td>δ</td> <td><input type="range" name="delta00" /></td>
+                 <td><input type="checkbox" name="delta-top-lock"/> </td>
+                 <td><input type="range" name="delta10" /></td></tr>
+  <tr><td>θ</td> <td><input type="range" name="theta00" /></td>
+                 <td><input type="checkbox" name="theta-top-lock"/> </td>
+                 <td><input type="range" name="theta10" /></td></tr>
+  <tr><td class="rotate">
+        <div><span>lock δ: <input type="checkbox" name="delta-left-lock"/>&nbsp;
+                   lock θ: <input type="checkbox" name="theta-left-lock"/></span></div></td>
+      <td colspan="3"><svg id="drawing" width="400" height="300"></svg></td>
+      <td></td></tr>
+
+  <tr><td>δ</td> <td><input type="range" name="delta00" /></td>
+                 <td></td>
+                 <td><input type="range" name="delta10" /></td></tr>
+  <tr><td>θ</td> <td><input type="range" name="theta00" /></td>
+                 <td></td>
+                 <td><input type="range" name="delta10" /></td></tr>
+  <tr><td colspan="5"><a id="download" download="pattern.svg">download SVG</a></td></tr>
+  </table>
 
 <script>
 /**
@@ -129,7 +177,7 @@ function pointsOf(offset) {
 svge.append("path")
   .attr("class", "structure")
   .attr("fill", "none")
-  .attr("stroke", "gray")
+  .attr("stroke", "none")
   .attr("d", pointsOf)
 ;
 
@@ -147,10 +195,8 @@ svge.append("path")
   .attr("d", fillPointsOf)
 ;
 
-d3.select("body").append("a")
-  .text("download svg")
+d3.select("#download")
   .attr("href", svgAsLink(d3.select("svg").node()))
-  .attr("download","pattern.svg")
 ;
 
 </script>
