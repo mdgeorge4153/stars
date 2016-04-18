@@ -8,140 +8,85 @@
   <script src="js/d3.v3.min.js" charset="utf-8"></script>
   <script src="js/export-svg.js"></script>
   <script src="js/geometry.js"></script>
+  <script src="js/pattern.js"></script>
 
   <style>
-    table {
-      margin-left: auto;
-      margin-right: auto;
+    .upload-link input {
+      display:none;
     }
 
-    td {
-      text-align: center;
+    .upload-link {
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
     }
 
-    .rotate {
-      width: 1em; white-space: nowrap;
+    input[type=number] {
+      width: 4em;
     }
-
-    .rotate > div {
-      width: 1.5em; height: 150px;
-      transform: rotate(-90deg) ;
-      transform-origin: bottom left 0;
-    }
-
-    .rotate > div > span {
-      position: relative;
-      top: 100%;
-    }
-
   </style>
 
   </head>
 
 <body>
 
-<table>
-  <tr><td>δ</td> <td><input type="range" name="delta00" /></td>
-                 <td><input type="checkbox" name="delta-top-lock"/> </td>
-                 <td><input type="range" name="delta10" /></td></tr>
-  <tr><td>θ</td> <td><input type="range" name="theta00" /></td>
-                 <td><input type="checkbox" name="theta-top-lock"/> </td>
-                 <td><input type="range" name="theta10" /></td></tr>
-  <tr><td class="rotate">
-        <div><span>lock δ: <input type="checkbox" name="delta-left-lock"/>&nbsp;
-                   lock θ: <input type="checkbox" name="theta-left-lock"/></span></div></td>
-      <td colspan="3"><svg id="drawing" width="500" height="300"></svg></td>
-      <td></td></tr>
+<svg id="drawing" width="500" height="300"></svg>
 
-  <tr><td>δ</td> <td><input type="range" name="delta00" /></td>
-                 <td></td>
-                 <td><input type="range" name="delta10" /></td></tr>
-  <tr><td>θ</td> <td><input type="range" name="theta00" /></td>
-                 <td></td>
-                 <td><input type="range" name="delta10" /></td></tr>
-  <tr><td colspan="5"><a id="download" download="pattern.svg">download SVG</a></td></tr>
-  </table>
+<div>
+<pre>
+/**
+ * returns the distance between the endpoints.
+ * r and c are the row and column number of the tile.
+ *         between 0 and numrows/numcols
+ * x and y are the (absolute) position of the point,
+ *         scaled to the range [0,1]
+ * typical outputs are in the range [0,1)
+ */
+function delta(r,c,x,y) {
+</pre>
+&nbsp;&nbsp;<textarea id="delta"rows="5" cols="50">
+return Math.sin(Math.PI*y);
+</textarea>
+<pre>
+}
+</pre>
+</div>
+
+<div>
+<pre>
+/**
+ * returns the angle between the edges.
+ * r and c are the row and column number of the tile.
+ *         between 0 and numrows/numcols
+ * x and y are the (absolute) position of the point,
+ *         scaled to the range [0,1]
+ * typical outputs are in the range [0,Math.PI)
+ */
+function theta(r,c,x,y) {
+</pre>
+&nbsp;&nbsp;<textarea id="theta"rows="5" cols="50">
+return 0.5+Math.PI/3*Math.sin(x*Math.PI);
+</textarea>
+<pre>
+}
+</pre>
+</div>
+
+<div>
+Rows: <input type="number" id="rows" value="10" step="1"></input>
+Cols: <input type="number" id="cols" value="20" step="1"></input>
+</div>
+
+<div><a download="pattern.svg" id="download">download svg</a></div>
+<div><a download="params.json" id="params">save parameters</a></div>
+<div>
+  <label class="upload-link">
+    <input type="file" name="load"></input>
+    load parameters
+    </label>
+</div>
 
 <script>
-
-function getX (p) { return p[0]; }
-function getY (p) { return p[1]; }
-
-/**
- *   p[0] _____ p[1]
- *       /_/∧\_\
- *      /   |   \
- *p[5] /\ angle /\ p[2]
- *     \/       \/
- *      \__   __/ <--- delta
- *       \_\_/_/
- *  p[4]      p[3]
- *
- * the inside edges are output by fill with
- *    border: p
- *    theta:  function (p) { return degreesToRadians(60); }
- *    delta:  function (p) { return 0.3; }
- *    connections: [1,2,3,4,5,0]
- *
- * - border is a list of points forming the polygon border.
- * - theta is a function giving the angle between the edges at the contact point
- * - delta is a function giving the width of the gap between edges at the contact
- *   point
- * - connections is an array of indices; one for each edge, conn[i] = j then the
- *     connection coming out of edge i should connect to edge j.
- *
- * delta and theta's inputs should be scaled similarly to p
- * delta's outputs should be scaled similarly to p
- * theta's outputs should be in [0, π]
- */
-function fill(p, theta, delta, connections) {
-  var N = p.length;
-
-  var endpoints = [];
-  for (var i = 0; i < N; i++) {
-    /*           |<-delta->|
-     * x---------x---------x----------x
-     * p[i]   e[i][0]   e[i][1]    p[i+1]
-     */
-    var p0 = p[i], p1 = p[(i+1)%N];
-
-    var center = add(smult(.5, p0), smult(.5, p1));
-
-    var diff = sub(p1,p0);
-    var dist = Math.sqrt(dot(diff,diff));
-    var unit = smult(delta(center)/(dist*2), diff);
-
-    endpoints.push([add(center, unit), sub(center,unit)]);
-  }
-
-  var result = [];
-  for (var i = 0; i < N; i++) {
-    var e0 = endpoints[i][1], e1 = endpoints[connections[i]][0];
-    var p0 = p[(i+1)%N],      p1 = p[connections[i]];
-
-    /*         ?          |
-     *         o----------x e1
-     *        /        \θ1|
-     *       /\         \ |
-     *      /θ0\          x p1
-     *  ___x______x     
-     *    e0      p0
-     */
-
-    var d0 = rotate(sub(p0,e0),  theta(e0)),
-        d1 = rotate(sub(p1,e1), -theta(e1));
-
-    result.push(e0);
-    result.push(intersect(e0,d0,e1,d1));
-    result.push(e1);
-  }
-
-  return result;
-}
-
-/******************************************************************************/
-/******************************************************************************/
-/******************************************************************************/
 
 /*       /
  *    1 /|            (0,2s)___(1,2s)                    .  .    .  .
@@ -163,81 +108,56 @@ for (var i = 0; i < 20; i++)
   for (var j = -Math.floor(i/2); j < 10 - Math.floor(i/2); j++)
     positions.push(add(smult(j, x), smult(i, y)));
 
-var minX = d3.min(shape, getX) + d3.min(positions, getX);
-var maxX = d3.max(shape, getX) + d3.max(positions, getX);
-var minY = d3.min(shape, getY) + d3.min(positions, getY);
-var maxY = d3.max(shape, getY) + d3.max(positions, getY);
+var conn = [1,2,3,4,5,0];
 
-// var theta = function (p) { return Math.PI*(p[0]/8 + 0)/6; };
-var thetaScale = d3.scale.linear().domain([minX,maxX]).range([0,Math.PI]);
-var theta = function (p) { return 0.5+Math.PI/3*Math.sin(thetaScale(p[0])); };
+function paramsAsLink() {
+  var result = {
+    deltaFun: d3.select('#delta').text(),
+    thetaFun: d3.select('#theta').text(),
+    rows:     d3.select('#rows').attr('value'),
+    cols:     d3.select('#cols').attr('value')
+  };
 
-// var delta = function (p) { return p[1]/15; };
-var deltaScale = d3.scale.linear().domain([minY,maxY]).range([0,Math.PI]);
-var delta = function (p) { return Math.sin(deltaScale(p[1])); };
-
-var conn  = [1,2,3,4,5,0];
-
-/******************************************************************************/
-
-var line = d3.svg.line()
-  .x(getX)
-  .y(getY)
-  .interpolate("linear-closed")
-;
-
-function pointsOf(offset) {
-  return line(shape.map(function (p) { return add(p, offset); }));
+  var data = encodeURIComponent(JSON.stringify(result,2));
+  return "data:application/json;charset=utf-8," + data;
 }
 
-function fillPointsOf(offset) {
-  var p = shape.map(function(p) { return add(p,offset); });
-  var f = fill(p, theta, delta, conn);
+function loadParams(event) {
+  var file = event.target.files[0];
+  if (file == undefined) return;
 
-  return line(f);
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    var input = JSON.parse(e.target.result);
+    d3.select('#delta').text(input.deltaFun);
+    d3.select('#theta').text(input.thetaFun);
+    d3.select('#rows').attr('value',input.rows);
+    d3.select('#cols').attr('value',input.cols);
+    update();
+  };
+
+  reader.readAsText(file)
 }
 
-/******************************************************************************/
+d3.select('#upload').on('change', loadParams);
 
-function drawChart(svg) {
-  var xfactor = svg.attr('width' )/(maxX - minX);
-  var yfactor = svg.attr('height')/(maxY - minY);
-  var factor  = xfactor < yfactor ? xfactor : yfactor;
-  
-  var area  = svg.selectAll('g').data([0]);
-  
-  area.enter().append('g');
+var pattern = IslamicPattern();
+pattern.shape(shape);
+pattern.connections(conn);
+pattern.offsets(positions);
 
-  area
-    .attr('transform', 'scale(' + factor + ') '
-  		   + 'translate(' + (-minX+.1) + ',' + (-minY+.1) + ')')
-  ;
-  
-  var path  = area.selectAll('path').data(positions);
-  
-  path.enter().append("path")
-    .attr("class", "structure")
-    .attr("fill", "none")
-    .attr("stroke", "gray")
-    .attr("stroke-width", "0.02")
-    .attr("d", pointsOf)
-  ;
-  
-  path.enter().append("path")
-    .attr("class", "fill")
-    .attr("fill", "none")
-    .attr("stroke", "black")
-    .attr("stroke-width", "0.02")
-  ;
-  
-  path.attr("d", fillPointsOf);
-  
-  d3.select("#download")
-    .attr("href", svgAsLink(d3.select("svg").node()))
-  ;
+function update() {
+
+  pattern.delta(new Function('r','c','x','y',d3.select('#delta').text()));
+  pattern.theta(new Function('r','c','x','y',d3.select('#theta').text()));
+  pattern.rows(d3.select('#rows').attr('value'));
+  pattern.cols(d3.select('#cols').attr('value'));
+
+  d3.select("#drawing").call(pattern);
+  d3.select("#params").attr("href",paramsAsLink());
 }
 
-d3.select("#drawing").call(drawChart);
+update();
 
 </script>
 
