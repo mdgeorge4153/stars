@@ -30,10 +30,6 @@
       width: 4em;
     }
 
-    textarea {
-     white-space: nowrap;
-    }
-
     #s1value, #s2value {
       display: inline-block;
       width: 3em;
@@ -76,7 +72,7 @@
  */
 function delta(r,c,x,y) {
 </pre>
-&nbsp;&nbsp;<textarea id="delta"rows="5" cols="50">
+&nbsp;&nbsp;<textarea id="delta"rows="5" cols="50" wrap="off">
 //return Math.sin(Math.PI*y);
 //return 0;
 return d3.select('#s1').node().value;
@@ -98,7 +94,7 @@ return d3.select('#s1').node().value;
  */
 function theta(r,c,x,y) {
 </pre>
-&nbsp;&nbsp;<textarea id="theta"rows="5" cols="50">
+&nbsp;&nbsp;<textarea id="theta"rows="5" cols="50" wrap="off">
 // return 0.5+Math.PI/3*Math.sin(x*Math.PI);
 // return Math.PI/3;
 return d3.select('#s2').node().value*Math.PI/2;
