@@ -11,6 +11,11 @@
   <script src="js/pattern.js"></script>
 
   <style>
+    #drawing,#controls {
+      float: right;
+      clear: right;
+    }
+
     .upload-link input {
       display:none;
     }
@@ -24,6 +29,15 @@
     input[type=number] {
       width: 4em;
     }
+
+    textarea {
+     white-space: nowrap;
+    }
+
+    #s1value, #s2value {
+      display: inline-block;
+      width: 3em;
+    }
   </style>
 
   </head>
@@ -31,8 +45,26 @@
 <body>
 
 <svg id="drawing" width="500" height="300"></svg>
+<div id="controls">
+  <div>
+  Rows: <input type="number" id="rows" value="10" step="1"></input>
+  Cols: <input type="number" id="cols" value="20" step="1"></input>
+  </div>
+  
+  <div><a download="pattern.svg" id="download">download svg</a></div>
+  <div><a download="params.json" id="params">save parameters</a></div>
+  <div>
+    <label class="upload-link">
+      <input type="file" name="load"></input>
+      load parameters
+      </label>
+  </div>
 
-<div>
+  s1: <input type="range" id="s1" min="0" max="1" step=".01"/> <span id="s1value"></span>
+  s2: <input type="range" id="s2" min="0" max="1" step=".01"/> <span id="s2value"></span>
+</div>
+
+<div id="delta-controls">
 <pre>
 /**
  * returns the distance between the endpoints.
@@ -46,14 +78,15 @@ function delta(r,c,x,y) {
 </pre>
 &nbsp;&nbsp;<textarea id="delta"rows="5" cols="50">
 //return Math.sin(Math.PI*y);
-return 0;
+//return 0;
+return d3.select('#s1').node().value;
 </textarea>
 <pre>
 }
 </pre>
 </div>
 
-<div>
+<div id="theta-controls">
 <pre>
 /**
  * returns the angle between the edges.
@@ -67,25 +100,12 @@ function theta(r,c,x,y) {
 </pre>
 &nbsp;&nbsp;<textarea id="theta"rows="5" cols="50">
 // return 0.5+Math.PI/3*Math.sin(x*Math.PI);
-return Math.PI/3;
+// return Math.PI/3;
+return d3.select('#s2').node().value*Math.PI/2;
 </textarea>
 <pre>
 }
 </pre>
-</div>
-
-<div>
-Rows: <input type="number" id="rows" value="10" step="1"></input>
-Cols: <input type="number" id="cols" value="20" step="1"></input>
-</div>
-
-<div><a download="pattern.svg" id="download">download svg</a></div>
-<div><a download="params.json" id="params">save parameters</a></div>
-<div>
-  <label class="upload-link">
-    <input type="file" name="load"></input>
-    load parameters
-    </label>
 </div>
 
 <script>
@@ -157,9 +177,15 @@ function update() {
 
   d3.select("#drawing").call(pattern);
   d3.select("#params").attr("href",paramsAsLink());
+
+  d3.select("#s1value").text(d3.select('#s1').node().value);
+  d3.select("#s2value").text(d3.select('#s2').node().value);
 }
 
 update();
+
+d3.selectAll('textarea').on('change',update);
+d3.selectAll('input').on('input',update);
 
 </script>
 
