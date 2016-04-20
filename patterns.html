@@ -45,7 +45,8 @@
 function delta(r,c,x,y) {
 </pre>
 &nbsp;&nbsp;<textarea id="delta"rows="5" cols="50">
-return Math.sin(Math.PI*y);
+//return Math.sin(Math.PI*y);
+return 0;
 </textarea>
 <pre>
 }
@@ -65,7 +66,8 @@ return Math.sin(Math.PI*y);
 function theta(r,c,x,y) {
 </pre>
 &nbsp;&nbsp;<textarea id="theta"rows="5" cols="50">
-return 0.5+Math.PI/3*Math.sin(x*Math.PI);
+// return 0.5+Math.PI/3*Math.sin(x*Math.PI);
+return Math.PI/3;
 </textarea>
 <pre>
 }
@@ -112,10 +114,10 @@ var conn = [1,2,3,4,5,0];
 
 function paramsAsLink() {
   var result = {
-    deltaFun: d3.select('#delta').text(),
-    thetaFun: d3.select('#theta').text(),
-    rows:     d3.select('#rows').attr('value'),
-    cols:     d3.select('#cols').attr('value')
+    deltaFun: d3.select('#delta').node().value,
+    thetaFun: d3.select('#theta').node().value,
+    rows:     d3.select('#rows').node().value,
+    cols:     d3.select('#cols').node().value
   };
 
   var data = encodeURIComponent(JSON.stringify(result,2));
@@ -148,10 +150,10 @@ pattern.offsets(positions);
 
 function update() {
 
-  pattern.delta(new Function('r','c','x','y',d3.select('#delta').text()));
-  pattern.theta(new Function('r','c','x','y',d3.select('#theta').text()));
-  pattern.rows(d3.select('#rows').attr('value'));
-  pattern.cols(d3.select('#cols').attr('value'));
+  pattern.delta(new Function('r','c','x','y',d3.select('#delta').node().value));
+  pattern.theta(new Function('r','c','x','y',d3.select('#theta').node().value));
+  pattern.rows(d3.select('#rows').node().value);
+  pattern.cols(d3.select('#cols').node().value);
 
   d3.select("#drawing").call(pattern);
   d3.select("#params").attr("href",paramsAsLink());

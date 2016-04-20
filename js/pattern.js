@@ -61,7 +61,7 @@ function IslamicPattern() {
       var dist = Math.sqrt(dot(diff,diff));
       var unit = smult(delta(center)/(dist*2), diff);
   
-      endpoints.push([add(center, unit), sub(center,unit)]);
+      endpoints.push([sub(center, unit), add(center,unit)]);
     }
   
     var result = [];
@@ -138,8 +138,16 @@ function IslamicPattern() {
   		   + 'translate(' + (-minX+.1) + ',' + (-minY+.1) + ')')
     ;
     
-    var path  = area.selectAll('path').data(offsets);
-    
+    var path = area.selectAll('path').data(offsets);
+
+    path.enter().append("path")
+      .attr("class", "fill")
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", "0.02")
+    ;
+    path.attr("d", fillPointsOf);
+
     path.enter().append("path")
       .attr("class", "structure")
       .attr("fill", "none")
@@ -148,14 +156,6 @@ function IslamicPattern() {
       .attr("d", pointsOf)
     ;
     
-    path.enter().append("path")
-      .attr("class", "fill")
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", "0.02")
-    ;
-    
-    path.attr("d", fillPointsOf);
     
     d3.select("#download")
       .attr("href", svgAsLink(d3.select("svg").node()))
