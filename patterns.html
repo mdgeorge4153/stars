@@ -126,7 +126,17 @@ for (var i = 0; i < 20; i++)
   for (var j = -Math.floor(i/2); j < 10 - Math.floor(i/2); j++)
     positions.push(add(smult(j, x), smult(i, y)));
 
-var conn = [1,2,3,4,5,0];
+offsets = [];
+for (var i = 0; i < 10; i++)
+  for (var j = 0; j < 20; j++)
+    offsets.push([i,j]);
+
+function offsetToPos (o) {
+  console.log(o);
+  return [o[1]*(1 + c), o[0]*2*s + (o[1] % 2 == 1 ? s : 0)];
+}
+
+var conn = [2,3,4,5,0,1];
 
 function paramsAsLink() {
   var result = {
@@ -162,7 +172,8 @@ d3.select('#upload').on('change', loadParams);
 var pattern = IslamicPattern();
 pattern.shape(shape);
 pattern.connections(conn);
-pattern.offsets(positions);
+pattern.offsets(offsets);
+pattern.offsetToPos(offsetToPos);
 
 function update() {
 

@@ -8,6 +8,10 @@ function IslamicPattern() {
     return Math.PI/3;
   }
 
+  var offsetToPos = function (o) {
+    return o;
+  }
+
   var rows = 10;
   var cols = 20;
 
@@ -44,7 +48,7 @@ function IslamicPattern() {
    * delta's outputs should be scaled similarly to p
    * theta's outputs should be in [0, π]
    */
-  function fill(p, theta, delta, connections) {
+  function fill(p, offset, theta, delta, connections) {
     var N = p.length;
   
     var endpoints = [];
@@ -59,7 +63,7 @@ function IslamicPattern() {
   
       var diff = sub(p1,p0);
       var dist = Math.sqrt(dot(diff,diff));
-      var unit = smult(delta(center)/(dist*2), diff);
+      var unit = smult(delta(offset,center)/(dist*2), diff);
   
       endpoints.push([sub(center, unit), add(center,unit)]);
     }
@@ -78,8 +82,8 @@ function IslamicPattern() {
        *    e0      p0
        */
   
-      var d0 = rotate(sub(p0,e0),  theta(e0)),
-  	d1 = rotate(sub(p1,e1), -theta(e1));
+      var d0 = rotate(sub(p0,e0),  theta(offset, e0)),
+  	d1 = rotate(sub(p1,e1), -theta(offset, e1));
   
       result.push(e0);
       result.push(intersect(e0,d0,e1,d1));
@@ -100,19 +104,19 @@ function IslamicPattern() {
   ;
   
   function pointsOf(offset) {
-    return line(shape.map(function (p) { return add(p, offset); }));
+    return line(shape.map(function (p) { return add(p, offsetToPos(offset)); }));
   }
 
   function wrap(f) {
     var xscale = d3.scale.linear().domain([minX,maxX]).range([0,1]);
     var yscale = d3.scale.linear().domain([minY,maxY]).range([0,1]);
 
-    return function(p) { return f(0,0,xscale(p[0]),yscale(p[1])); };
+    return function(o,p) { return f(o[0],o[1],xscale(p[0]),yscale(p[1])); };
   }
 
   function fillPointsOf(offset) {
-    var p = shape.map(function(p) { return add(p,offset); });
-    var f = fill(p, wrap(theta), wrap(delta), conn);
+    var p = shape.map(function(p) { return add(p,offsetToPos(offset)); });
+    var f = fill(p, offset, wrap(theta), wrap(delta), conn);
   
     return line(f);
   }
@@ -128,7 +132,7 @@ function IslamicPattern() {
     var xfactor = svg.attr('width' )/(maxX - minX);
     var yfactor = svg.attr('height')/(maxY - minY);
     var factor  = xfactor < yfactor ? xfactor : yfactor;
-    
+
     var area  = svg.selectAll('g').data([0]);
     
     area.enter().append('g');
@@ -151,7 +155,7 @@ function IslamicPattern() {
     path.enter().append("path")
       .attr("class", "structure")
       .attr("fill", "none")
-      .attr("stroke", "gray")
+      .attr("stroke", "blue")
       .attr("stroke-width", "0.02")
       .attr("d", pointsOf)
     ;
@@ -191,6 +195,11 @@ function IslamicPattern() {
 
   result.offsets = function(o) {
     offsets = o;
+    return result;
+  }
+
+  result.offsetToPos = function(f) {
+    offsetToPos = f;
     return result;
   }
 
