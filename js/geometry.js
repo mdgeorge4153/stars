@@ -4,6 +4,10 @@ var sub   = function (v1, v2) { return add(smult(-1,v2), v1); }
 var dot   = function (v1, v2) { return v1[0] * v2[0] + v1[1] * v2[1]; }
 var sdiv  = function (v, s)   { return smult(1/s, v); }
 
+function translate (ps, v) {
+  return ps.map(function (v2) { return add(v,v2); });
+};
+
 function getX (p) { return p[0]; }
 function getY (p) { return p[1]; }
 

@@ -9,6 +9,7 @@
   <script src="js/export-svg.js"></script>
   <script src="js/geometry.js"></script>
   <script src="js/pattern.js"></script>
+  <script src="js/shapes.js"></script>
 
   <style>
     #drawing,#controls {
@@ -64,18 +65,20 @@
 <pre>
 /**
  * returns the distance between the endpoints.
- * r and c are the row and column number of the tile.
- *         between 0 and numrows/numcols
+ * tile    is the tile currently being drawn.
+ *         use tile[0] and tile[1] to get the row and column
  * x and y are the (absolute) position of the point,
  *         scaled to the range [0,1]
  * typical outputs are in the range [0,1)
  */
-function delta(r,c,x,y) {
+function delta(tile,x,y) {
 </pre>
-&nbsp;&nbsp;<textarea id="delta"rows="5" cols="50" wrap="off">
+&nbsp;&nbsp;<textarea id="delta" rows="5" cols="50" wrap="off">
+var s1 = d3.select('#s1').node().value;
+var s2 = d3.select('#s2').node().value;
 //return Math.sin(Math.PI*y);
 //return 0;
-return d3.select('#s1').node().value;
+return s1;
 </textarea>
 <pre>
 }
@@ -86,18 +89,20 @@ return d3.select('#s1').node().value;
 <pre>
 /**
  * returns the angle between the edges.
- * r and c are the row and column number of the tile.
- *         between 0 and numrows/numcols
+ * tile    is the tile currently being drawn.
+ *         use tile[0] and tile[1] to get the row and column
  * x and y are the (absolute) position of the point,
  *         scaled to the range [0,1]
  * typical outputs are in the range [0,Math.PI)
  */
-function theta(r,c,x,y) {
+function theta(tile,x,y) {
 </pre>
 &nbsp;&nbsp;<textarea id="theta"rows="5" cols="50" wrap="off">
+var s1 = d3.select('#s1').node().value;
+var s2 = d3.select('#s2').node().value;
 // return 0.5+Math.PI/3*Math.sin(x*Math.PI);
 // return Math.PI/3;
-return d3.select('#s2').node().value*Math.PI/2;
+return s2;
 </textarea>
 <pre>
 }
@@ -106,45 +111,12 @@ return d3.select('#s2').node().value*Math.PI/2;
 
 <script>
 
-/*       /
- *    1 /|            (0,2s)___(1,2s)                    .  .    .  .
- *     / | sin 60   (-c,s) /   \  (1+c, s)     |\       .    .  .    .
- *    /__|                 \___/               x  y      o  .    o  .
- *   cos 60              (0,0) (1,0)           |    \   .    o  .
- *                                                       o  .    o  .
- */
-
-var c = Math.cos(Math.PI/3), s = Math.sin(Math.PI/3);
-var shape = [[0,0], [1,0], [1+c, s], [1, 2*s], [0, 2*s], [-c,s]];
-
-var x = [0, 2*s];
-var y = [1+c, s];
-
-/** positions: [0,0], [1,0], [2,-1], ... */
-var positions = [];
-for (var i = 0; i < 20; i++)
-  for (var j = -Math.floor(i/2); j < 10 - Math.floor(i/2); j++)
-    positions.push(add(smult(j, x), smult(i, y)));
-
-offsets = [];
-for (var i = 0; i < 10; i++)
-  for (var j = 0; j < 20; j++)
-    offsets.push([i,j]);
-
-function offsetToPos (o) {
-  console.log(o);
-  return [o[1]*(1 + c), o[0]*2*s + (o[1] % 2 == 1 ? s : 0)];
-}
-
-var conn = [2,3,4,5,0,1];
+var params = ['delta', 'theta', 'rows', 'cols', 's1', 's2'];
 
 function paramsAsLink() {
-  var result = {
-    deltaFun: d3.select('#delta').node().value,
-    thetaFun: d3.select('#theta').node().value,
-    rows:     d3.select('#rows').node().value,
-    cols:     d3.select('#cols').node().value
-  };
+  var result = {};
+  for (var i in params)
+    result[params[i]] = d3.select('#' + params[i]).node().value;
 
   var data = encodeURIComponent(JSON.stringify(result,2));
   return "data:application/json;charset=utf-8," + data;
@@ -157,10 +129,9 @@ function loadParams(event) {
   var reader = new FileReader();
   reader.onload = function (e) {
     var input = JSON.parse(e.target.result);
-    d3.select('#delta').text(input.deltaFun);
-    d3.select('#theta').text(input.thetaFun);
-    d3.select('#rows').attr('value',input.rows);
-    d3.select('#cols').attr('value',input.cols);
+    for (var i in params)
+      d3.select('#' + params[i]).node().value = input[params[i]];
+
     update();
   };
 
@@ -170,23 +141,32 @@ function loadParams(event) {
 d3.select('#upload').on('change', loadParams);
 
 var pattern = IslamicPattern();
-pattern.shape(shape);
-pattern.connections(conn);
-pattern.offsets(offsets);
-pattern.offsetToPos(offsetToPos);
+pattern.points(hexPoints);
+pattern.connections(hexConn);
 
 function update() {
 
-  pattern.delta(new Function('r','c','x','y',d3.select('#delta').node().value));
-  pattern.theta(new Function('r','c','x','y',d3.select('#theta').node().value));
-  pattern.rows(d3.select('#rows').node().value);
-  pattern.cols(d3.select('#cols').node().value);
+  var rows = d3.select('#rows').node().value;
+  var cols = d3.select('#cols').node().value;
+
+  tiles = [];
+  for (var i = 0; i < rows; i++)
+    for (var j = 0; j < cols; j++)
+      tiles.push([i,j]);
+
+  pattern.delta(new Function('tile','x','y',d3.select('#delta').node().value));
+  pattern.theta(new Function('tile','x','y',d3.select('#theta').node().value));
+  pattern.tiles(tiles);
+  console.log(rows, cols);
+  pattern.boundingBox(hexBB(+rows,+cols));
 
   d3.select("#drawing").call(pattern);
   d3.select("#params").attr("href",paramsAsLink());
+  d3.select("#download").attr("href", svgAsLink(d3.select("#drawing").node()))
 
   d3.select("#s1value").text(d3.select('#s1').node().value);
   d3.select("#s2value").text(d3.select('#s2').node().value);
+  ;
 }
 
 update();
