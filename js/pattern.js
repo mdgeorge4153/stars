@@ -86,22 +86,14 @@ function IslamicPattern() {
        *    e0      p0
        */
 
-      var t0
-
       var d0 = rotate(sub(p0,e0),  theta(tile, e0[0], e0[1])),
           d1 = rotate(sub(p1,e1), -theta(tile, e1[0], e0[1]));
 
-      result.push(e0);
-      result.push(intersect(e0,d0,e1,d1));
-      result.push(e1);
+      result.push([e0,intersect(e0,d0,e1,d1),e1]);
     }
 
     return result;
   }
-
-  /******************************************************************************/
-  /******************************************************************************/
-  /******************************************************************************/
 
   /* draw the pattern ***********************************************************/
 
@@ -116,34 +108,17 @@ function IslamicPattern() {
     var area  = svg.selectAll('g').data([0]);
 
     area.enter().append('g');
-    area.exit().remove();
 
     area
       .attr('transform', 'scale(' + factor + ') '
           + 'translate(' + (-bb.x) + ',' + (-bb.y) + ')')
     ;
 
-    var line = d3.svg.line()
-      .x(getX)
-      .y(getY)
-      .interpolate("linear-closed")
-    ;
-
     var tile = area.selectAll('g.tile').data(tiles);
+    tile.exit().remove();
 
     var g = tile.enter().append("g")
       .attr("class", "tile")
-    ;
-
-    g.append("path")
-      .attr("class", "fill")
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", "0.02")
-    ;
-
-    tile.select("path.fill")
-      .attr("d", function (tile) { return line(fill(tile)); })
     ;
 
     g.append("path")
@@ -153,10 +128,32 @@ function IslamicPattern() {
       .attr("stroke-width", "0.02")
     ;
 
-    tile.select("path.structure")
-      .attr("d", function (tile) { return line(points(tile)) })
+    var cycle = d3.svg.line()
+      .x(getX)
+      .y(getY)
+      .interpolate("linear-closed")
     ;
 
+    tile.select("path.structure")
+      .attr("d", function (tile) { return cycle(points(tile)) })
+    ;
+
+    g.append("g")
+      .attr("class", "pattern")
+    ;
+
+    var pattern = tile.select("g.pattern").selectAll("path").data(fill);
+
+    pattern.enter().append("path")
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", "0.02")
+    ;
+
+    var line = d3.svg.line().x(getX).y(getY).interpolate('linear');
+    pattern
+      .attr("d", line)
+    ;
   }
 
   /* Getters and setters ******************************************************/
