@@ -33,8 +33,10 @@ function hexBB(n_rows,n_cols) {
 /** Octagon tiling ************************************************************/
 
 function is_square(o) {
-  return (o[0] + o[1])%2 == 0;
+  return (o[0] + o[1])%2 == 1;
 }
+
+var r2 = Math.sqrt(2);
 
 function octPoints(o) { 
   /*            _ 
@@ -45,14 +47,12 @@ function octPoints(o) {
    *      \._ /.  \.
    */
 
-  var s = Math.sqrt(2);
-
-  var x = (1 + s)*o[0];
-  var y = (1 + s)*o[1];
+  var x = (1 + r2)*o[0];
+  var y = (1 + r2)*o[1];
 
   var shape = is_square(o)         ?
     [[0,0], [0,-1], [1,-1], [1,0]] :
-    [[-s,0], [-s,-1], [0,-s-1], [1,-s-1], [1+s,-1], [1+s,0], [1,s], [0,s]];
+    [[-r2,0], [-r2,-1], [0,-r2-1], [1,-r2-1], [1+r2,-1], [1+r2,0], [1,r2], [0,r2]];
 
   return translate(shape,[x,y]);
 }
@@ -64,4 +64,7 @@ function octConn(o) {
     return [3,4,5,6,7,0,1,2];
 }
 
+function octBB(num_rows,num_cols) {
+  return {x: -r2, y: -r2, width:r2 + (1 + r2)*num_cols, height: r2 + (1 + r2)*num_rows};
+}
 
