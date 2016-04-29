@@ -47,7 +47,15 @@
   Rows: <input type="number" id="rows" value="2" step="1"></input>
   Cols: <input type="number" id="cols" value="2" step="1"></input>
   </div>
+
+  <div>
+  Shape: <select id="shape">
+    <option value="hex">Hexagons</option>
+    <option value="oct">Octagons</option>
+  </select>
+  </div>
   
+
   <div><a download="pattern.svg" id="download">download svg</a></div>
   <div><a download="params.json" id="params">save parameters</a></div>
   <div>
@@ -102,7 +110,7 @@ var s1 = d3.select('#s1').node().value;
 var s2 = d3.select('#s2').node().value;
 // return 0.5+Math.PI/3*Math.sin(x*Math.PI);
 // return Math.PI/3;
-return s2;
+return s2*Math.PI;
 </textarea>
 <pre>
 }
@@ -111,7 +119,7 @@ return s2;
 
 <script>
 
-var params = ['delta', 'theta', 'rows', 'cols', 's1', 's2'];
+var params = ['shape', 'rows', 'cols', 's1', 's2', 'delta', 'theta'];
 
 function paramsAsLink() {
   var result = {};
@@ -141,10 +149,18 @@ function loadParams(event) {
 d3.select('#upload').on('change', loadParams);
 
 var pattern = IslamicPattern();
-pattern.points(hexPoints);
-pattern.connections(hexConn);
 
 function update() {
+
+  var shape = null;
+
+  switch(d3.select('#shape').node().value) {
+    case 'hex': shape = hex; break;
+    case 'oct': shape = oct; break;
+  }
+
+  pattern.points(shape.points);
+  pattern.connections(shape.conn);
 
   var rows = d3.select('#rows').node().value;
   var cols = d3.select('#cols').node().value;
@@ -157,8 +173,7 @@ function update() {
   pattern.delta(new Function('tile','x','y',d3.select('#delta').node().value));
   pattern.theta(new Function('tile','x','y',d3.select('#theta').node().value));
   pattern.tiles(tiles);
-  console.log(rows, cols);
-  pattern.boundingBox(hexBB(+rows,+cols));
+  pattern.boundingBox(shape.bb(+rows,+cols));
 
   d3.select("#drawing").call(pattern);
   d3.select("#params").attr("href",paramsAsLink());
@@ -171,7 +186,7 @@ function update() {
 
 update();
 
-d3.selectAll('textarea').on('change',update);
+d3.selectAll('textarea,select').on('change',update);
 d3.selectAll('input').on('input',update);
 
 </script>

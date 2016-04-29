@@ -66,7 +66,7 @@ function IslamicPattern() {
 
       var diff  = sub(p1,p0);
       var dist  = Math.sqrt(dot(diff,diff));
-      var d     = delta(tile, center[0], center[1]);
+      var d     = delta(tile, scaleX(center[0]), scaleY(center[1]));
       var unit  = smult(d/(dist*2), diff);
 
       endpoints.push([sub(center, unit), add(center,unit)]);
@@ -86,10 +86,10 @@ function IslamicPattern() {
        *    e0      p0
        */
 
-      var d0 = rotate(sub(p0,e0),  theta(tile, e0[0], e0[1])),
-          d1 = rotate(sub(p1,e1), -theta(tile, e1[0], e0[1]));
+      var d0 = rotate(sub(p0,e0),  theta(tile, scaleX(e0[0]), scaleY(e0[1]))),
+          d1 = rotate(sub(p1,e1), -theta(tile, scaleY(e1[0]), scaleX(e1[1])));
 
-      result.push([e0,intersect(e0,d0,e1,d1),e1]);
+      result.push([p0,e0,intersect(e0,d0,e1,d1),e1]);
     }
 
     return result;
@@ -102,10 +102,9 @@ function IslamicPattern() {
     var xfactor = svg.attr('width' )/bb.width;
     var yfactor = svg.attr('height')/bb.height;
     var factor  = xfactor < yfactor ? xfactor : yfactor;
-    console.log(xfactor);
-    console.log(yfactor);
 
     var area  = svg.selectAll('g').data([0]);
+    area.exit().remove();
 
     area.enter().append('g');
 
@@ -143,6 +142,7 @@ function IslamicPattern() {
     ;
 
     var pattern = tile.select("g.pattern").selectAll("path").data(fill);
+    pattern.exit().remove();
 
     pattern.enter().append("path")
       .attr("fill", "none")
