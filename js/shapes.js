@@ -5,6 +5,10 @@ tiling:
   position: [r,c] -> [x,y]
 */
 
+function connections(n,k) {
+  return d3.range(n).map(function (i) { return (i + k) % n; });
+}
+
 /** Hexagon tiling ************************************************************/
 
 function Hex() {
@@ -110,13 +114,13 @@ function Dodec() {
     [[1+c,-s], [1+c+s,c-s], [1+s,c], [1,0]]
   ];
 
-  this.offsets = [
-    [0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0],
-    [0,0,0,0,0,0],
-    [0,0,0,0],
-    [0,0,0,0,0,0],
-    [0,0,0,0],
+  this.conns = [
+    connections(12,3),
+    connections(4,1),
+    connections(6,1),
+    connections(4,1),
+    connections(6,1),
+    connections(4,1),
   ];
 
   this.position = function(o) {
@@ -128,4 +132,14 @@ function Dodec() {
 }
 
 dodec = new Dodec();
+ddodec = new Dodec();
+ddodec.shapes = ddodec.shapes.concat(ddodec.shapes);
+ddodec.conns  = ddodec.conns.concat([
+  connections(12,4),
+  connections(4,2),
+  connections(6,2),
+  connections(4,2),
+  connections(6,2),
+  connections(4,2),
+]);
 

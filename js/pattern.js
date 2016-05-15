@@ -58,9 +58,9 @@ function IslamicPattern() {
    * delta's outputs should be scaled similarly to p
    * theta's outputs should be in [0, π]
    */
-  function fill(tile) {
-    var p           = points(tile);
-    var connections = conns(tile);
+  function fill(tileset, tile) {
+    var p           = shape.shapes[tile];
+    var connections = shape.conns[tile];
 
     var N = p.length;
 
@@ -119,7 +119,7 @@ function IslamicPattern() {
      * var     datum  dom
      * area    0      <g transform="...scale...">
      * tileset tileid   <g class="tileset" transform="...translate...">
-     * tile    shape      <g class="tile">
+     * tile    shapenum   <g class="tile">
      *                      <path class="structure" style="..."/>
      * pattern              <g class="pattern">
      *                        <path/> <path/> ... </g> </g>
@@ -151,7 +151,7 @@ function IslamicPattern() {
       })
     ;
 
-    var tile = tileset.selectAll('g.tile').data(shape.shapes);
+    var tile = tileset.selectAll('g.tile').data(d3.range(shape.shapes.length));
     tile.exit().remove();
     var newtile = tile.enter().append('g').attr('class','tile');
     newtile.append('path')
@@ -165,18 +165,12 @@ function IslamicPattern() {
     ;
 
     tile.select("path.structure")
-      .attr("d", function (shape) { return cycle(shape); })
+      .attr("d", function (i) { return cycle(shape.shapes[i]); })
     ;
 
-/*
-    tile.append('g')
-      .attr('class', 'pattern')
-
-    g.append("g")
-      .attr("class", "pattern")
-    ;
-
-    var pattern = tile.select("g.pattern").selectAll("path").data(fill);
+    var pattern = tile.select("g.pattern").selectAll("path").data(function(i) {
+      return fill(d3.select(this.parentNode.parentNode.parentNode).datum(), i);
+    });
     pattern.exit().remove();
 
     pattern.enter().append("path")
@@ -189,7 +183,6 @@ function IslamicPattern() {
     pattern
       .attr("d", line)
     ;
-*/
   }
 
   /* Getters and setters ******************************************************/

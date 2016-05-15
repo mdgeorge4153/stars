@@ -87,6 +87,7 @@
       <option value="hex">Hexagons</option>
       <option value="oct">Octagons</option>
       <option value="dodec">Dodecahedra</option>
+      <option value="ddodec">Doubled Dodecahedra</option>
     </select>
   </div>
   
@@ -208,6 +209,7 @@ function update() {
     case 'hex':   shape = hex;   break;
     case 'oct':   shape = oct;   break;
     case 'dodec': shape = dodec; break;
+    case 'ddodec': shape = ddodec; break;
   }
 
   pattern.shape(shape);
