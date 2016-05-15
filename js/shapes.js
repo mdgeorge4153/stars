@@ -13,6 +13,17 @@ function connections(n,k) {
   return d3.range(n).map(function (i) { return (i + k) % n; });
 }
 
+function interleave(a1,a2) {
+  var result = new Array(a1.length + a2.length);
+
+  for (var i in a1) {
+    result[2*i] = a1[i];
+    result[2*i+1] = a2[i];
+  }
+
+  return result;
+}
+
 /** Hexagon tiling ************************************************************/
 
 function Hex() {
@@ -136,9 +147,12 @@ function Dodec() {
 }
 
 result.dodec  = new Dodec();
+
+var dod = result.dodec;
+
 result.ddodec = new Dodec();
-result.ddodec.shapes = result.ddodec.shapes.concat(result.ddodec.shapes);
-result.ddodec.conns  = result.ddodec.conns.concat([
+result.ddodec.shapes = interleave(dod.shapes,dod.shapes);
+result.ddodec.conns  = interleave(dod.conns,[
   connections(12,4),
   connections(4,2),
   connections(6,2),
