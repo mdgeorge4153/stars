@@ -31,33 +31,16 @@ function IslamicPattern() {
     scaleY = d3.scale.linear().domain(bb[0]).range([0,1]);
   }
 
+  /****************************************************************************/
+
   /**
-   *   p[0] _____ p[1]
-   *       /_/∧\_\
-   *      /   |   \
-   *p[5] /\ angle /\ p[2]
-   *     \/       \/
-   *      \__   __/ <--- delta
-   *       \_\_/_/
-   *  p[4]      p[3]
+   * tileset: the id of the tileset
+   * tile: an integer, the nth shape in the tileset
    *
-   * the inside edges are output by fill with
-   *    border: p
-   *    theta:  function (p) { return degreesToRadians(60); }
-   *    delta:  function (p) { return 0.3; }
-   *    connections: [1,2,3,4,5,0]
-   *
-   * - border is a list of points forming the polygon border.
-   * - theta is a function giving the angle between the edges at the contact point
-   * - delta is a function giving the width of the gap between edges at the contact
-   *   point
-   * - connections is an array of indices; one for each edge, conn[i] = j then the
-   *     connection coming out of edge i should connect to edge j.
-   *
-   * delta and theta's inputs should be scaled similarly to p
-   * delta's outputs should be scaled similarly to p
-   * theta's outputs should be in [0, π]
+   * returns an array of lines filling the nth tile.
+   * coordinates are relative to the tile
    */
+
   function fill(tileset, tile) {
     var p           = shape.shapes[tile];
     var connections = shape.conns[tile];
@@ -73,10 +56,11 @@ function IslamicPattern() {
       var p0 = p[i], p1 = p[(i+1)%N];
 
       var center = add(smult(.5, p0), smult(.5, p1));
+      var absCenter = add(center, shape.position(tileset));
 
       var diff  = sub(p1,p0);
       var dist  = Math.sqrt(dot(diff,diff));
-      var d     = delta(tile, scaleX(center[0]), scaleY(center[1]));
+      var d     = delta(tile, scaleX(absCenter[0]), scaleY(absCenter[1]));
       var unit  = smult(d/(dist*2), diff);
 
       endpoints.push([sub(center, unit), add(center,unit)]);
@@ -96,10 +80,12 @@ function IslamicPattern() {
        *    e0      p0
        */
 
-      var d0 = rotate(sub(p0,e0),  theta(tile, scaleX(e0[0]), scaleY(e0[1]))),
-          d1 = rotate(sub(p1,e1), -theta(tile, scaleY(e1[0]), scaleX(e1[1])));
+      var absE0 = add(e0, shape.position(tileset));
+      var absE1 = add(e1, shape.position(tileset));
+      var d0 = rotate(sub(p0,e0),  theta(tile, scaleX(absE0[0]), scaleY(absE0[1]))),
+          d1 = rotate(sub(p1,e1), -theta(tile, scaleY(absE1[0]), scaleX(absE1[1])));
 
-      result.push([p0,e0,intersect(e0,d0,e1,d1),e1]);
+      result.push([e0,intersect(e0,d0,e1,d1),e1]);
     }
 
     return result;
