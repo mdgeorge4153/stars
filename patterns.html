@@ -11,10 +11,24 @@
   <script src="js/pattern.js"></script>
   <script src="js/shapes.js"></script>
 
+  <link rel="stylesheet" href="js/jquery-ui.css"/>
+  <script src="js/jquery-1.10.2.js"></script>
+  <script src="js/jquery-ui-1.11.4.js"></script>
+
   <style>
-    #drawing,#controls {
+    #controls{
+      width: 50%;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    #display{
+      position: absolute;
+      top: 1%; left: 51%;
+    }
+
+    #savetab,#loadtab {
       float: right;
-      clear: right;
     }
 
     .upload-link input {
@@ -22,11 +36,11 @@
     }
 
     .upload-link {
-      color: blue;
       text-decoration: underline;
       cursor: pointer;
     }
 
+/*
     input[type=number] {
       width: 4em;
     }
@@ -35,86 +49,118 @@
       display: inline-block;
       width: 3em;
     }
+*/
   </style>
+
+  <script>
+  $(function() {
+    $( '#controls' ).tabs();
+    $( '#params' ).unbind('click');
+    $( '#load' ).unbind('click');
+  });
+  </script>
 
   </head>
 
 <body>
 
-<svg id="drawing" width="500" height="300"></svg>
 <div id="controls">
-  <div>
-  Rows: <input type="number" id="rows" value="2" step="1"></input>
-  Cols: <input type="number" id="cols" value="2" step="1"></input>
-  </div>
+  <ul> <li><a href="#delta-controls">Delta</a></li>
+       <li><a href="#theta-controls">Theta</a></li>
+       <li><a href="#shape-controls">Shape</a></li>
+       <li><a href="#style-controls">Style</a></li>
+       <li id="savetab"><a download="params.json" id="params">Save</a></li>
+       <li id="loadtab" class="ui-state-default ui-corner-top" role="tab">
+         <label class="upload-link ui-tabs-anchor">
+         <input type="file" name="load"></input>
+         Load</label>
+         </li></ul>
 
-  <div>
-  Shape: <select id="shape">
-    <option value="hex">Hexagons</option>
-    <option value="oct">Octagons</option>
-  </select>
+  <div id="shape-controls">
+    Rows: <input type="number" id="rows" value="2" step="1"></input>
+    Cols: <input type="number" id="cols" value="2" step="1"></input>
+
+    Shape: <select id="shape">
+      <option value="hex">Hexagons</option>
+      <option value="oct">Octagons</option>
+    </select>
   </div>
   
-
-  <div><a download="pattern.svg" id="download">download svg</a></div>
-  <div><a download="params.json" id="params">save parameters</a></div>
-  <div>
-    <label class="upload-link">
-      <input type="file" name="load"></input>
-      load parameters
-      </label>
+  <div id="delta-controls">
+  <pre>
+  /**
+   * returns the distance between the endpoints.
+   * tile    is the tile currently being drawn.
+   *         use tile[0] and tile[1] to get the row and column
+   * x and y are the (absolute) position of the point,
+   *         scaled to the range [0,1]
+   * typical outputs are in the range [0,1)
+   */
+  function delta(tile,x,y) {
+  </pre>
+  &nbsp;&nbsp;<textarea id="delta" rows="10" cols="50" wrap="off">
+  var s1 = d3.select('#s1').node().value;
+  var s2 = d3.select('#s2').node().value;
+  //return Math.sin(Math.PI*y);
+  //return 0;
+  return s1;
+  </textarea>
+  <pre>
+  }
+  </pre>
   </div>
 
+  <div id="theta-controls">
+  <pre>
+  /**
+   * returns the angle between the edges.
+   * tile    is the tile currently being drawn.
+   *         use tile[0] and tile[1] to get the row and column
+   * x and y are the (absolute) position of the point,
+   *         scaled to the range [0,1]
+   * typical outputs are in the range [0,Math.PI)
+   */
+  function theta(tile,x,y) {
+  </pre>
+  &nbsp;&nbsp;<textarea id="theta"rows="10" cols="50" wrap="off">
+  var s1 = d3.select('#s1').node().value;
+  var s2 = d3.select('#s2').node().value;
+  // return 0.5+Math.PI/3*Math.sin(x*Math.PI);
+  // return Math.PI/3;
+  return s2*Math.PI;
+  </textarea>
+  <pre>
+  }
+  </pre>
+  </div>
+
+  <div id="style-controls">
+    Note: not currently used.
+    <textarea id="style"rows="20" cols="50" wrap="off">
+.structure {
+  fill: none;
+  stroke: blue;
+  stroke-width: 0.02;
+}
+
+.pattern {
+  fill: none;
+  stroke: black;
+  stroke-width: 0.02;
+}
+    </textarea>
+  </div>
+
+</div>
+
+
+<div id="display">
+
+  <a download="pattern.svg" id="download"><svg id="drawing" width="500" height="300"></svg></a>
+
+  <br />
   s1: <input type="range" id="s1" min="0" max="1" step=".01"/> <span id="s1value"></span>
   s2: <input type="range" id="s2" min="0" max="1" step=".01"/> <span id="s2value"></span>
-</div>
-
-<div id="delta-controls">
-<pre>
-/**
- * returns the distance between the endpoints.
- * tile    is the tile currently being drawn.
- *         use tile[0] and tile[1] to get the row and column
- * x and y are the (absolute) position of the point,
- *         scaled to the range [0,1]
- * typical outputs are in the range [0,1)
- */
-function delta(tile,x,y) {
-</pre>
-&nbsp;&nbsp;<textarea id="delta" rows="5" cols="50" wrap="off">
-var s1 = d3.select('#s1').node().value;
-var s2 = d3.select('#s2').node().value;
-//return Math.sin(Math.PI*y);
-//return 0;
-return s1;
-</textarea>
-<pre>
-}
-</pre>
-</div>
-
-<div id="theta-controls">
-<pre>
-/**
- * returns the angle between the edges.
- * tile    is the tile currently being drawn.
- *         use tile[0] and tile[1] to get the row and column
- * x and y are the (absolute) position of the point,
- *         scaled to the range [0,1]
- * typical outputs are in the range [0,Math.PI)
- */
-function theta(tile,x,y) {
-</pre>
-&nbsp;&nbsp;<textarea id="theta"rows="5" cols="50" wrap="off">
-var s1 = d3.select('#s1').node().value;
-var s2 = d3.select('#s2').node().value;
-// return 0.5+Math.PI/3*Math.sin(x*Math.PI);
-// return Math.PI/3;
-return s2*Math.PI;
-</textarea>
-<pre>
-}
-</pre>
 </div>
 
 <script>
