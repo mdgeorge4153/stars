@@ -14,7 +14,7 @@ function(d3,svgAsLink,IslamicPattern,Params,Shapes,jqi) {
 /******************************************************************************/
 
 var pattern = IslamicPattern();
-var params  = new Params(['shape', 'rows', 'cols', 's1', 's2', 'delta', 'theta'],'load','save');
+var params  = new Params(['shape', 'rows', 'cols', 's1', 's2', 'delta', 'theta','style'],'load','save');
 
 function update() {
   pattern.shape(Shapes[params.shape]);
@@ -28,7 +28,7 @@ function update() {
   pattern.delta(new Function('tile','x','y',params.delta));
   pattern.theta(new Function('tile','x','y',params.theta));
 
-  // TODO: d3.select('#svg-style').innerHTML(params.style)
+  document.getElementById('svg-style').innerHTML = params.style;
 
   d3.select("#drawing").call(pattern);
   d3.select("#download").attr("href", svgAsLink(d3.select("#drawing").node()))

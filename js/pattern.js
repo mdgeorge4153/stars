@@ -151,9 +151,6 @@ function IslamicPattern() {
     var newtile = tile.enter().append('g').attr('class','tile');
     newtile.append('path')
       .attr('class','structure')
-      .attr("fill", "none")
-      .attr("stroke", "blue")
-      .attr("stroke-width", "0.02")
     ;
     newtile.append('g')
       .attr('class','pattern')
@@ -167,12 +164,7 @@ function IslamicPattern() {
       return fill(d3.select(this.parentNode.parentNode.parentNode).datum(), i);
     });
     pattern.exit().remove();
-
-    pattern.enter().append("path")
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", "0.02")
-    ;
+    pattern.enter().append("path");
 
     pattern
       .attr("d", line)
