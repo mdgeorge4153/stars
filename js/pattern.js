@@ -71,12 +71,12 @@ function IslamicPattern() {
       var e0 = endpoints[i][1], e1 = endpoints[connections[i]][0];
       var p0 = p[(i+1)%N],      p1 = p[connections[i]];
 
-      /*         ?          |
-       *         o----------x e1
-       *        /        \θ1|
-       *       /\         \ |
-       *      /θ0\          x p1
-       *  ___x______x
+      ╱*         ?          │
+       *         o──────────x e1
+       *        ╱        ╲θ1│
+       *       ╱╲         ╲ │
+       *      ╱θ0╲          x p1
+       *  ───x──────x
        *    e0      p0
        */
 
