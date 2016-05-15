@@ -4,10 +4,29 @@
  *   document.getElementById("link").href = svgAsLink(svg);
  */
 
-define([], function () { return function (svg) {
+define([], function () {
+
+function getCSSProperty(name) {
+  return function() {
+    return window.getComputedStyle(this)[name];
+  };
+}
+
+return function (svg) {
+  // apply CSS
+  var clone = svg.cloneNode(true);
+
+  var paths = d3.select(clone).selectAll('path');
+
+  paths
+    .attr('fill',   getCSSProperty('fill'))
+    .attr('stroke', getCSSProperty('stroke'))
+    .attr('stroke-width', getCSSProperty('stroke-width'))
+  ;
+
   //get svg source.
   var serializer = new XMLSerializer();
-  var source = serializer.serializeToString(svg);
+  var source = serializer.serializeToString(clone);
 
   //add name spaces.
   if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
