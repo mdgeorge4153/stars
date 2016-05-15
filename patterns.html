@@ -5,15 +5,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Islamic star pattern generator</title>
-  <script src="js/d3.v3.min.js" charset="utf-8"></script>
-  <script src="js/export-svg.js"></script>
-  <script src="js/geometry.js"></script>
-  <script src="js/pattern.js"></script>
-  <script src="js/shapes.js"></script>
+  <script src="js/require.js" data-main="js/main.js"></script>
 
-  <link rel="stylesheet" href="js/jquery-ui.css"/>
-  <script src="js/jquery-1.10.2.js"></script>
-  <script src="js/jquery-ui-1.11.4.js"></script>
+  <link rel="stylesheet" href="js/lib/jquery-ui.css"/>
 
   <style>
     #controls{
@@ -53,6 +47,8 @@
     }
   </style>
 
+  <!-- TODO: <style id="svg-style"></style> -->
+
   </head>
 
 <body>
@@ -66,10 +62,10 @@
        <li><a href="#theta-controls">Theta</a></li>
        <li><a href="#shape-controls">Shape</a></li>
        <li><a href="#style-controls">Style</a></li>
-       <li id="savetab"><a download="params.json" id="params">Save</a></li>
+       <li id="savetab"><a download="params.json" id="save">Save</a></li>
        <li id="loadtab" class="ui-state-default ui-corner-top" role="tab">
          <label class="upload-link ui-tabs-anchor">
-         <input type="file" name="load"></input>
+         <input type="file" id="load"></input>
          Load</label>
          </li></ul>
 
@@ -155,45 +151,6 @@ Note: not currently used.
 
 </div> <!-- controls -->
 
-<script>
-$(function() {
-  $( '#controls' ).tabs();
-  $( '#params' ).unbind('click');
-  $( '#load' ).unbind('click');
-});
-
-var params = ['shape', 'rows', 'cols', 's1', 's2', 'delta', 'theta'];
-
-function paramsAsLink() {
-  var result = {};
-  for (var i in params)
-    result[params[i]] = d3.select('#' + params[i]).node().value;
-
-  var data = encodeURIComponent(JSON.stringify(result,2));
-  return "data:application/json;charset=utf-8," + data;
-}
-
-function loadParams(event) {
-  var file = event.target.files[0];
-  if (file == undefined) return;
-
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    var input = JSON.parse(e.target.result);
-    for (var i in params)
-      if (input[params[i]])
-        d3.select('#' + params[i]).node().value = input[params[i]];
-
-    update();
-  };
-
-  reader.readAsText(file)
-}
-
-d3.select('#upload').on('change', loadParams);
-
-</script>
-
 <!-- *********************************************************************** -->
 <!-- ** Display ************************************************************ -->
 <!-- *********************************************************************** -->
@@ -208,53 +165,6 @@ d3.select('#upload').on('change', loadParams);
   s2: <input type="range" id="s2" min="0" max="1" step=".01"/> <span id="s2value"></span>
 
 </div>
-
-<script>
-
-var pattern = IslamicPattern();
-
-var stylesheet = document.createElement("style");
-
-function update() {
-
-  var shape = null;
-
-  switch(d3.select('#shape').node().value) {
-    case 'hex':   shape = hex;   break;
-    case 'oct':   shape = oct;   break;
-    case 'dodec': shape = dodec; break;
-    case 'ddodec': shape = ddodec; break;
-  }
-
-  pattern.shape(shape);
-
-  var rows = d3.select('#rows').node().value;
-  var cols = d3.select('#cols').node().value;
-
-  tiles = [];
-  for (var i = 0; i < rows; i++)
-    for (var j = 0; j < cols; j++)
-      tiles.push([i,j]);
-
-  pattern.delta(new Function('tile','x','y',d3.select('#delta').node().value));
-  pattern.theta(new Function('tile','x','y',d3.select('#theta').node().value));
-  pattern.tiles(tiles);
-
-  d3.select("#drawing").call(pattern);
-  d3.select("#params").attr("href",paramsAsLink());
-  d3.select("#download").attr("href", svgAsLink(d3.select("#drawing").node()))
-
-  d3.select("#s1value").text(d3.select('#s1').node().value);
-  d3.select("#s2value").text(d3.select('#s2').node().value);
-  ;
-}
-
-update();
-
-d3.selectAll('textarea,select').on('change',update);
-d3.selectAll('input').on('input',update);
-
-</script>
 
 </body>
 

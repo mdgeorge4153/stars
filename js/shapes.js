@@ -5,6 +5,10 @@ tiling:
   position: [r,c] -> [x,y]
 */
 
+define(['vec','lib/d3'], function (vec,d3) {
+
+var result = {}
+
 function connections(n,k) {
   return d3.range(n).map(function (i) { return (i + k) % n; });
 }
@@ -34,7 +38,7 @@ function Hex() {
   }
 }
 
-hex = new Hex();
+result.hex = new Hex();
 
 /** Octagon tiling ************************************************************/
 
@@ -67,7 +71,7 @@ function Oct() {
   }
 }
 
-oct = new Oct();
+result.oct = new Oct();
 
 /** Dodecagon tiling **********************************************************/
 
@@ -131,10 +135,10 @@ function Dodec() {
   };
 }
 
-dodec = new Dodec();
-ddodec = new Dodec();
-ddodec.shapes = ddodec.shapes.concat(ddodec.shapes);
-ddodec.conns  = ddodec.conns.concat([
+result.dodec  = new Dodec();
+result.ddodec = new Dodec();
+result.ddodec.shapes = result.ddodec.shapes.concat(result.ddodec.shapes);
+result.ddodec.conns  = result.ddodec.conns.concat([
   connections(12,4),
   connections(4,2),
   connections(6,2),
@@ -143,3 +147,8 @@ ddodec.conns  = ddodec.conns.concat([
   connections(4,2),
 ]);
 
+/******************************************************************************/
+
+return result;
+
+});

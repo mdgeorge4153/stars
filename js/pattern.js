@@ -1,3 +1,6 @@
+
+define(['vec','lib/d3'], function(vec,d3) {
+
 function IslamicPattern() {
 
   /** configuration parameters */
@@ -19,14 +22,14 @@ function IslamicPattern() {
   function resize() {
     /** find bounding box */
     var shapePoints = d3.merge(shape.shapes);
-    var shapeX = d3.extent(shapePoints, getX);
-    var shapeY = d3.extent(shapePoints, getY);
+    var shapeX = d3.extent(shapePoints, vec.getX);
+    var shapeY = d3.extent(shapePoints, vec.getY);
 
     var positions = tiles.map(shape.position);
-    var posX = d3.extent(positions, getX);
-    var posY = d3.extent(positions, getY);
+    var posX = d3.extent(positions, vec.getX);
+    var posY = d3.extent(positions, vec.getY);
 
-    bb = [add(shapeX,posX), add(shapeY,posY)];
+    bb = [vec.add(shapeX,posX), vec.add(shapeY,posY)];
     scaleX = d3.scale.linear().domain(bb[0]).range([0,1]);
     scaleY = d3.scale.linear().domain(bb[0]).range([0,1]);
   }
@@ -55,15 +58,15 @@ function IslamicPattern() {
        */
       var p0 = p[i], p1 = p[(i+1)%N];
 
-      var center = add(smult(.5, p0), smult(.5, p1));
-      var absCenter = add(center, shape.position(tileset));
+      var center = vec.add(vec.smult(.5, p0), vec.smult(.5, p1));
+      var absCenter = vec.add(center, shape.position(tileset));
 
-      var diff  = sub(p1,p0);
-      var dist  = Math.sqrt(dot(diff,diff));
+      var diff  = vec.sub(p1,p0);
+      var dist  = Math.sqrt(vec.dot(diff,diff));
       var d     = delta(tile, scaleX(absCenter[0]), scaleY(absCenter[1]));
-      var unit  = smult(d/(dist*2), diff);
+      var unit  = vec.smult(d/(dist*2), diff);
 
-      endpoints.push([sub(center, unit), add(center,unit)]);
+      endpoints.push([vec.sub(center, unit), vec.add(center,unit)]);
     }
 
     var result = [];
@@ -71,7 +74,7 @@ function IslamicPattern() {
       var e0 = endpoints[i][1], e1 = endpoints[connections[i]][0];
       var p0 = p[(i+1)%N],      p1 = p[connections[i]];
 
-      ╱*         ?          │
+      /*         ?          │
        *         o──────────x e1
        *        ╱        ╲θ1│
        *       ╱╲         ╲ │
@@ -80,12 +83,12 @@ function IslamicPattern() {
        *    e0      p0
        */
 
-      var absE0 = add(e0, shape.position(tileset));
-      var absE1 = add(e1, shape.position(tileset));
-      var d0 = rotate(sub(p0,e0),  theta(tile, scaleX(absE0[0]), scaleY(absE0[1]))),
-          d1 = rotate(sub(p1,e1), -theta(tile, scaleY(absE1[0]), scaleX(absE1[1])));
+      var absE0 = vec.add(e0, shape.position(tileset));
+      var absE1 = vec.add(e1, shape.position(tileset));
+      var d0 = vec.rotate(vec.sub(p0,e0),  theta(tile, scaleX(absE0[0]), scaleY(absE0[1]))),
+          d1 = vec.rotate(vec.sub(p1,e1), -theta(tile, scaleY(absE1[0]), scaleX(absE1[1])));
 
-      result.push([e0,intersect(e0,d0,e1,d1),e1]);
+      result.push([e0,vec.intersect(e0,d0,e1,d1),e1]);
     }
 
     return result;
@@ -94,9 +97,15 @@ function IslamicPattern() {
   /* draw the pattern ***********************************************************/
 
   var cycle = d3.svg.line()
-    .x(getX)
-    .y(getY)
+    .x(vec.getX)
+    .y(vec.getY)
     .interpolate("linear-closed")
+  ;
+
+  var line = d3.svg.line()
+    .x(vec.getX)
+    .y(vec.getY)
+    .interpolate('linear')
   ;
 
   function result(svg) {
@@ -165,7 +174,6 @@ function IslamicPattern() {
       .attr("stroke-width", "0.02")
     ;
 
-    var line = d3.svg.line().x(getX).y(getY).interpolate('linear');
     pattern
       .attr("d", line)
     ;
@@ -195,3 +203,11 @@ function IslamicPattern() {
 
   return result;
 }
+
+return IslamicPattern;
+
+});
+
+/*
+** vim: ts=2 sw=2 ai et
+*/
