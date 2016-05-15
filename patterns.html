@@ -25,6 +25,9 @@
     #display{
       position: absolute;
       top: 1%; left: 51%;
+      width: 50%;
+      text-align: center;
+      padding-top: 1em;
     }
 
     #savetab,#loadtab {
@@ -83,6 +86,7 @@
     Shape: <select id="shape">
       <option value="hex">Hexagons</option>
       <option value="oct">Octagons</option>
+      <option value="dodec">Dodecahedra</option>
     </select>
   </div>
   
@@ -201,12 +205,12 @@ function update() {
   var shape = null;
 
   switch(d3.select('#shape').node().value) {
-    case 'hex': shape = hex; break;
-    case 'oct': shape = oct; break;
+    case 'hex':   shape = hex;   break;
+    case 'oct':   shape = oct;   break;
+    case 'dodec': shape = dodec; break;
   }
 
-  pattern.points(shape.points);
-  pattern.connections(shape.conn);
+  pattern.shape(shape);
 
   var rows = d3.select('#rows').node().value;
   var cols = d3.select('#cols').node().value;
@@ -219,7 +223,6 @@ function update() {
   pattern.delta(new Function('tile','x','y',d3.select('#delta').node().value));
   pattern.theta(new Function('tile','x','y',d3.select('#theta').node().value));
   pattern.tiles(tiles);
-  pattern.boundingBox(shape.bb(+rows,+cols));
 
   d3.select("#drawing").call(pattern);
   d3.select("#params").attr("href",paramsAsLink());

@@ -1,74 +1,131 @@
+/*
+tiling:
+  shapes:   list of polygons
+  conns:    list of connection lists (one per poly)
+  position: [r,c] -> [x,y]
+*/
+
 /** Hexagon tiling ************************************************************/
 
-var c = Math.cos(Math.PI/3), s = Math.sin(Math.PI/3);
+function Hex() {
 
-/** offsets of the form [r,c] */
-function hexPoints(o) {
-  /*       /
-   *    1 /|            (0,2s)___(1,2s)        .  .    .  .
-   *     / | sin 60   (-c,s) /   \  (1+c, s)  .    .  .    .
-   *    /__|                 \___/             o  .    o  .
-   *   cos 60              (0,0) (1,0)        .    o  .
-   *                                           o  .    o  .
+  /*
+   *   (0,2s)   (1,2s)
+   *         ∙ ∙                     ╱│
+   * (-c,s) ∙   ∙ (1+c,s)        1  ╱ │ s
+   *         ∘ ∙                   ╱__│
+   *    (0,0)   (1,0)               c
    */
-  
-  var shape = [[0,0], [1,0], [1+c, s], [1, 2*s], [0, 2*s], [-c,s]];
 
-  var x = o[1]*(1 + c);
-  var y = o[0]*2*s + (o[1] % 2 == 1 ? s : 0);
+  var c = Math.cos(Math.PI/3), s = Math.sin(Math.PI/3);
 
-  return translate(shape, [x,y]);
+  this.shapes = [[[0,0], [1,0], [1+c, s], [1, 2*s], [0, 2*s], [-c,s]]];
+
+  this.conns  = [[2,3,4,5,0,1]];
+
+  this.position = function (o) {
+    var x = o[1]*(1 + c);
+    var y = o[0]*2*s + (o[1] % 2 == 1 ? s : 0);
+    return [x,y];
+  }
 }
 
-function hexConn(o) {
-  return [2,3,4,5,0,1];
-}
-
-function hexBB(n_rows,n_cols) {
-  // width: 1 ↦ c + (1 + c),  2 ↦ c + 2(1+c),   3 ↦ c + 3(1+c)
-  // height: 1 ↦ 3s,  2 ↦ 5s,  3 ↦ 7s
-  return {x: -c, y: 0, width: c + n_cols*(1 + c), height: s*(1 + 2*n_rows)};
-}
-
-var hex = {points: hexPoints, conn: hexConn, bb: hexBB};
+hex = new Hex();
 
 /** Octagon tiling ************************************************************/
 
-function is_square(o) {
-  return (o[0] + o[1])%2 == 0;
-}
+function Oct() {
 
-var r2 = 1/Math.sqrt(2);
+  var r2 = 1/Math.sqrt(2);
 
-function octPoints(o) { 
-  /*            _ 
-   *       ._ /.  \.   square: (0,0)      oct: (0,1)
-   *       |_|     |   oct:    (1,0)   square: (1,1)
-   *      /.  \._ /.   if sum even: square; sum odd: octagon
-   *     |     |_|
-   *      \._ /.  \.
+  /*
+   *         (0,0) ∘0∙ (1,0)
+   *        (0,-1) ∘1∙ (1,-1)                1╱ │ r2
+   *  (-r2,-1-r2) ∙   ∙ (1+r2,-1-r2)          ──┘
+   *  (-r2,-2-r2) ∙   ∙ (1+r2,-2-r2)          r2
+   *   (0,-2-2*r2) ∙ ∙ (1,-2-2*r2)
    */
 
-  var x = (1 + r2)*o[1];
-  var y = (1 + r2)*o[0];
+  this.shapes = [
+    [[0,0], [0,-1], [1,-1], [1,0]],
+    [[0,-1], [-r2,-1-r2], [-r2,-2-r2], [0,-2-2*r2], [1,-2-2*r2], [1+r2,-2-r2], [1+r2, -1-r2], [1,-1]]
+  ];
 
-  var shape = is_square(o)         ?
-    [[0,0], [0,-1], [1,-1], [1,0]] :
-    [[-r2,0], [-r2,-1], [0,-r2-1], [1,-r2-1], [1+r2,-1], [1+r2,0], [1,r2], [0,r2]];
+  this.conns = [
+    [2,3,0,1],
+    [3,4,5,6,7,0,1,2],
+  ];
 
-  return translate(shape,[x,y]);
+  this.position = function(o) {
+    var x = (1 + r2)*o[1];
+    var y = (1 + r2)*(2*o[0] + (o[1] % 2 == 0 ? 1 : 0));
+    return [x,y];
+  }
 }
 
-function octConn(o) {
-  if (is_square(o))
-    return [2,3,0,1];
-  else
-    return [3,4,5,6,7,0,1,2];
+oct = new Oct();
+
+/** Dodecagon tiling **********************************************************/
+
+function Dodec() {
+  /*
+   * y vals
+   * ------
+   * 1+2c+3s ─      ∙
+   * 1+c+3s  ─        ∙ ∙
+   * 1+2c+2s ─   ∙ ∘1                ╱│
+   * 1+c+2s  ─ ∙     ∙   ∙       1  ╱ │ s
+   * 1+c+s   ─∙       ∘2∙          ╱__│
+   * c+s     ─∙       ∘3∙           c
+   * c       ─ ∙     ∙   ∙          
+   * 0       ─   ∘0∙      
+   * c-s     ─        ∘4∙
+   * -s      ─      ∘5    
+   *          ││ │ ││││ ││
+   * x vals   ││ │ ││││ ││      ∙ ∙       ∙ ∙
+   * ------   ││ │ ││││ ││    ∙     ∙   ∙     ∙
+   * -c-s    ─┘│ │ ││││ ││   ∙       ∙ ∙       ∙
+   * -s      ──┘ │ ││││ ││   ∙    2(1+c+s)     ∙
+   * 0       ────┘ ││││ ││    ∙ ┌─────────┐   ∙
+   * 1       ──────┘│││ ││      ∘ ∙  ∙ ∙  ∘┐∙
+   * 1+c     ───────┘││ ││         ∙     ∙ │
+   * 1+s     ────────┘│ ││        ∙       ∙│1+2c+2s
+   * 1+c+s   ─────────┘ ││        ∙       ∙│       
+   * 2+c+s   ───────────┘│         ∙     ∙ │
+   * 2+2c+s  ────────────┘           ∘ ∙  ∙┘
+   */
+
+  var c = Math.cos(Math.PI/3), s = Math.sin(Math.PI/3);
+
+  this.shapes = [
+    [[0,0],[1,0],[1+s,c],[1+c+s,c+s],
+     [1+c+s,1+c+s], [1+s,1+c+2*s], [1,1+2*c+2*s], [0,1+2*c+2*s],
+     [-s,1+c+2*s], [-c-s, 1+c+s], [-c-s,c+s], [-s,c]],
+    [[1,1+2*c+2*s], [1+s,1+c+2*s], [1+c+s,1+c+3*s], [1+c,1+2*c+3*s]],
+    [[1+c+s,1+c+s], [2+c+s,1+c+s], [2+2*c+s, 1+c+2*s],
+     [2+c+s,1+c+3*s], [1+c+s,1+c+3*s], [1+s,1+c+2*s]],
+    [[1+c+s,c+s], [2+c+s,c+s], [2+c+s,1+c+s], [1+c+s,1+c+s]],
+    [[1+c+s,c-s], [2+c+s, c-s], [2+2*c+s,c],
+     [2+c+s,c+s], [1+c+s,c+s], [1+s,c]],
+    [[1+c,-s], [1+c+s,c-s], [1+s,c], [1,0]]
+  ];
+
+  this.offsets = [
+    [0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0],
+    [0,0,0,0,0,0],
+    [0,0,0,0],
+    [0,0,0,0,0,0],
+    [0,0,0,0],
+  ];
+
+  this.position = function(o) {
+    var x = (1+c+s)*(2*o[1] + (o[0] % 2 == 0 ? 0 : 1));
+    var y = (1 + c + 3*s) * o[0];
+
+    return [x,y];
+  };
 }
 
-function octBB(num_rows,num_cols) {
-  return {x: -r2, y: -(1+r2), width:r2 + (1 + r2)*num_cols, height: r2 + (1 + r2)*num_rows};
-}
-
-var oct = {points: octPoints, conn: octConn, bb: octBB};
+dodec = new Dodec();
 

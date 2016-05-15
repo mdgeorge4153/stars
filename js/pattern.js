@@ -5,20 +5,30 @@ function IslamicPattern() {
   var delta = function (tile,x,y) { return 0; };
   var theta = function (tile,x,y) { return Math.PI/3; };
 
-  var points = function(tile) { return tile;  };
-  var conns  = function(tile) { return []; };
-  var tiles  = [];
+  var shape = {
+    shapes: [], conns: [], position: function(tile) { return [0,0]; }
+  };
 
-  /** bounding box */
-  var bb = {x: 0, y: 0, width: 0, height: 0};
+  var tiles  = [];
 
   /** computed constants */
 
+  var bb = [[0,1], [0,1]]; /* [[minX, maxX], [minY, maxY]] */
   var scaleX, scaleY;
 
-  function update() {
-    scaleX = d3.scale.linear().domain([bb.x, bb.x + bb.width ]).range([0,1]);
-    scaleY = d3.scale.linear().domain([bb.y, bb.y + bb.height]).range([0,1]);
+  function resize() {
+    /** find bounding box */
+    var shapePoints = d3.merge(shape.shapes);
+    var shapeX = d3.extent(shapePoints, getX);
+    var shapeY = d3.extent(shapePoints, getY);
+
+    var positions = tiles.map(shape.position);
+    var posX = d3.extent(positions, getX);
+    var posY = d3.extent(positions, getY);
+
+    bb = [add(shapeX,posX), add(shapeY,posY)];
+    scaleX = d3.scale.linear().domain(bb[0]).range([0,1]);
+    scaleY = d3.scale.linear().domain(bb[0]).range([0,1]);
   }
 
   /**
@@ -56,8 +66,8 @@ function IslamicPattern() {
 
     var endpoints = [];
     for (var i = 0; i < N; i++) {
-      /*           |<-delta->|
-       * x---------x---------x----------x
+      /*           ┌──delta──┐
+       * x─────────x─────────x──────────x
        * p[i]   e[i][0]   e[i][1]    p[i+1]
        */
       var p0 = p[i], p1 = p[(i+1)%N];
@@ -97,45 +107,70 @@ function IslamicPattern() {
 
   /* draw the pattern ***********************************************************/
 
+  var cycle = d3.svg.line()
+    .x(getX)
+    .y(getY)
+    .interpolate("linear-closed")
+  ;
+
   function result(svg) {
 
-    var xfactor = svg.attr('width' )/bb.width;
-    var yfactor = svg.attr('height')/bb.height;
+    /*
+     * var     datum  dom
+     * area    0      <g transform="...scale...">
+     * tileset tileid   <g class="tileset" transform="...translate...">
+     * tile    shape      <g class="tile">
+     *                      <path class="structure" style="..."/>
+     * pattern              <g class="pattern">
+     *                        <path/> <path/> ... </g> </g>
+     *                    <g class="tile"> ... </g>
+     *                    <g class="tile"> ... </g> </g>
+     *                  <g class="tileset" transform="...translate...">
+     *                  <g class="tileset" transform="...translate...">
+     */
+
+    resize();
+    var xfactor = svg.attr('width' )/(bb[0][1] - bb[0][0]);
+    var yfactor = svg.attr('height')/(bb[1][1] - bb[1][0]);
     var factor  = xfactor < yfactor ? xfactor : yfactor;
 
     var area  = svg.selectAll('g').data([0]);
     area.exit().remove();
-
     area.enter().append('g');
-
-    area
-      .attr('transform', 'scale(' + factor + ') '
-          + 'translate(' + (-bb.x) + ',' + (-bb.y) + ')')
+    area.attr('transform', 'scale(' + factor + ') '
+            + 'translate(' + (-bb[0][0]) + ',' + (-bb[1][0]) + ')')
     ;
 
-    var tile = area.selectAll('g.tile').data(tiles);
+    var tileset = area.selectAll('g.tileset').data(tiles);
+    tileset.exit().remove();
+    tileset.enter().append('g').attr('class','tileset');
+    tileset
+      .attr('transform', function (t) {
+        var p = shape.position(t);
+        return 'translate(' + p[0] + ',' + p[1] + ')';
+      })
+    ;
+
+    var tile = tileset.selectAll('g.tile').data(shape.shapes);
     tile.exit().remove();
-
-    var g = tile.enter().append("g")
-      .attr("class", "tile")
-    ;
-
-    g.append("path")
-      .attr("class", "structure")
+    var newtile = tile.enter().append('g').attr('class','tile');
+    newtile.append('path')
+      .attr('class','structure')
       .attr("fill", "none")
       .attr("stroke", "blue")
       .attr("stroke-width", "0.02")
     ;
-
-    var cycle = d3.svg.line()
-      .x(getX)
-      .y(getY)
-      .interpolate("linear-closed")
+    newtile.append('g')
+      .attr('class','pattern')
     ;
 
     tile.select("path.structure")
-      .attr("d", function (tile) { return cycle(points(tile)) })
+      .attr("d", function (shape) { return cycle(shape); })
     ;
+
+/*
+    tile.append('g')
+      .attr('class', 'pattern')
 
     g.append("g")
       .attr("class", "pattern")
@@ -154,6 +189,7 @@ function IslamicPattern() {
     pattern
       .attr("d", line)
     ;
+*/
   }
 
   /* Getters and setters ******************************************************/
@@ -168,24 +204,13 @@ function IslamicPattern() {
     return result;
   }
 
-  result.points = function(newPoints) {
-    points = newPoints;
-    return result;
-  }
-
-  result.connections = function(newConns) {
-    conns = newConns;
+  result.shape = function(newShape) {
+    shape = newShape;
     return result;
   }
 
   result.tiles = function(newTiles) {
     tiles = newTiles;
-    return result;
-  }
-
-  result.boundingBox = function(newBB) {
-    bb = newBB;
-    update();
     return result;
   }
 
