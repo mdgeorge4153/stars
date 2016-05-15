@@ -43,7 +43,6 @@
       cursor: pointer;
     }
 
-/*
     input[type=number] {
       width: 4em;
     }
@@ -52,20 +51,15 @@
       display: inline-block;
       width: 3em;
     }
-*/
   </style>
-
-  <script>
-  $(function() {
-    $( '#controls' ).tabs();
-    $( '#params' ).unbind('click');
-    $( '#load' ).unbind('click');
-  });
-  </script>
 
   </head>
 
 <body>
+
+<!-- *********************************************************************** -->
+<!-- ** Control panel ****************************************************** -->
+<!-- *********************************************************************** -->
 
 <div id="controls">
   <ul> <li><a href="#delta-controls">Delta</a></li>
@@ -79,69 +73,72 @@
          Load</label>
          </li></ul>
 
-  <div id="shape-controls">
-    Rows: <input type="number" id="rows" value="2" step="1"></input>
-    Cols: <input type="number" id="cols" value="2" step="1"></input>
+<!-- *********************************************************************** -->
 
-    Shape: <select id="shape">
-      <option value="hex">Hexagons</option>
-      <option value="oct">Octagons</option>
-      <option value="dodec">Dodecahedra</option>
-      <option value="ddodec">Doubled Dodecahedra</option>
-    </select>
-  </div>
+<div id="shape-controls">
+  Rows: <input type="number" id="rows" value="2" step="1"></input>
+  Cols: <input type="number" id="cols" value="4" step="1"></input>
+
+  Shape: <select id="shape">
+    <option value="hex">Hexagons</option>
+    <option value="oct">Octagons</option>
+    <option value="dodec">Dodecahedra</option>
+    <option value="ddodec">Doubled Dodecahedra</option>
+  </select>
+</div>
   
-  <div id="delta-controls">
-  <pre>
-  /**
-   * returns the distance between the endpoints.
-   * tile    is the tile currently being drawn.
-   *         use tile[0] and tile[1] to get the row and column
-   * x and y are the (absolute) position of the point,
-   *         scaled to the range [0,1]
-   * typical outputs are in the range [0,1)
-   */
-  function delta(tile,x,y) {
-  </pre>
-  &nbsp;&nbsp;<textarea id="delta" rows="10" cols="50" wrap="off">
-var s1 = d3.select('#s1').node().value;
-var s2 = d3.select('#s2').node().value;
-//return Math.sin(Math.PI*y);
-//return 0;
-return s1;
-</textarea>
-  <pre>
-  }
-  </pre>
-  </div>
+<!-- *********************************************************************** -->
 
-  <div id="theta-controls">
-  <pre>
-  /**
-   * returns the angle between the edges.
-   * tile    is the tile currently being drawn.
-   *         use tile[0] and tile[1] to get the row and column
-   * x and y are the (absolute) position of the point,
-   *         scaled to the range [0,1]
-   * typical outputs are in the range [0,Math.PI)
-   */
-  function theta(tile,x,y) {
-  </pre>
-  &nbsp;&nbsp;<textarea id="theta"rows="10" cols="50" wrap="off">
+<div id="delta-controls">
+<pre>
+/**
+ * returns the distance between the endpoints.
+ * tile    is the tile currently being drawn.
+ *         use tile[0] and tile[1] to get the row and column
+ * x and y are the (absolute) position of the point,
+ *         scaled to the range [0,1]
+ * typical outputs are in the range [0,1)
+ */
+function delta(tile,x,y) {
+</pre>&nbsp;&nbsp;<textarea id="delta" rows="10" cols="50" wrap="off">
 var s1 = d3.select('#s1').node().value;
 var s2 = d3.select('#s2').node().value;
-// return 0.5+Math.PI/3*Math.sin(x*Math.PI);
-// return Math.PI/3;
+return 2*s1-1;
+</textarea>
+<pre>
+}
+</pre>
+</div>
+
+<!-- *********************************************************************** -->
+
+<div id="theta-controls">
+<pre>
+/**
+ * returns the angle between the edges.
+ * tile    is the tile currently being drawn.
+ *         use tile[0] and tile[1] to get the row and column
+ * x and y are the (absolute) position of the point,
+ *         scaled to the range [0,1]
+ * typical outputs are in the range [0,Math.PI)
+ */
+function theta(tile,x,y) {
+</pre>
+&nbsp;&nbsp;<textarea id="theta"rows="10" cols="50" wrap="off">
+var s1 = d3.select('#s1').node().value;
+var s2 = d3.select('#s2').node().value;
 return s2*Math.PI;
 </textarea>
-  <pre>
-  }
-  </pre>
-  </div>
+<pre>
+}
+</pre>
+</div>
 
-  <div id="style-controls">
-    Note: not currently used.
-    <textarea id="style"rows="20" cols="50" wrap="off">
+<!-- *********************************************************************** -->
+
+<div id="style-controls">
+Note: not currently used.
+<textarea id="style"rows="20" cols="50" wrap="off">
 .structure {
   fill: none;
   stroke: blue;
@@ -153,22 +150,17 @@ return s2*Math.PI;
   stroke: black;
   stroke-width: 0.02;
 }
-    </textarea>
-  </div>
-
+</textarea>
 </div>
 
-
-<div id="display">
-
-  <a download="pattern.svg" id="download"><svg id="drawing" width="500" height="300"></svg></a>
-
-  <br />
-  s1: <input type="range" id="s1" min="0" max="1" step=".01"/> <span id="s1value"></span>
-  s2: <input type="range" id="s2" min="0" max="1" step=".01"/> <span id="s2value"></span>
-</div>
+</div> <!-- controls -->
 
 <script>
+$(function() {
+  $( '#controls' ).tabs();
+  $( '#params' ).unbind('click');
+  $( '#load' ).unbind('click');
+});
 
 var params = ['shape', 'rows', 'cols', 's1', 's2', 'delta', 'theta'];
 
@@ -189,7 +181,8 @@ function loadParams(event) {
   reader.onload = function (e) {
     var input = JSON.parse(e.target.result);
     for (var i in params)
-      d3.select('#' + params[i]).node().value = input[params[i]];
+      if (input[params[i]])
+        d3.select('#' + params[i]).node().value = input[params[i]];
 
     update();
   };
@@ -199,7 +192,28 @@ function loadParams(event) {
 
 d3.select('#upload').on('change', loadParams);
 
+</script>
+
+<!-- *********************************************************************** -->
+<!-- ** Display ************************************************************ -->
+<!-- *********************************************************************** -->
+
+
+<div id="display">
+
+  <a download="pattern.svg" id="download"><svg id="drawing" width="500" height="300"></svg></a>
+
+  <br />
+  s1: <input type="range" id="s1" min="0" max="1" step=".01"/> <span id="s1value"></span>
+  s2: <input type="range" id="s2" min="0" max="1" step=".01"/> <span id="s2value"></span>
+
+</div>
+
+<script>
+
 var pattern = IslamicPattern();
+
+var stylesheet = document.createElement("style");
 
 function update() {
 
