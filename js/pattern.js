@@ -5,8 +5,8 @@ function IslamicPattern() {
 
   /** configuration parameters */
 
-  var delta = function (tile,x,y) { return 0; };
-  var theta = function (tile,x,y) { return Math.PI/3; };
+  var delta = function (tileset,tile,x,y) { return 0; };
+  var theta = function (tileset,tile,x,y) { return Math.PI/3; };
 
   var shape = {
     shapes: [], conns: [], position: function(tile) { return [0,0]; }
@@ -63,7 +63,7 @@ function IslamicPattern() {
 
       var diff  = vec.sub(p1,p0);
       var dist  = Math.sqrt(vec.dot(diff,diff));
-      var d     = delta(tile, scaleX(absCenter[0]), scaleY(absCenter[1]));
+      var d     = delta(tileset, tile, scaleX(absCenter[0]), scaleY(absCenter[1]));
       var unit  = vec.smult(d/(dist*2), diff);
 
       endpoints.push([vec.sub(center, unit), vec.add(center,unit)]);
@@ -85,8 +85,8 @@ function IslamicPattern() {
 
       var absE0 = vec.add(e0, shape.position(tileset));
       var absE1 = vec.add(e1, shape.position(tileset));
-      var d0 = vec.rotate(vec.sub(p0,e0),  theta(tile, scaleX(absE0[0]), scaleY(absE0[1]))),
-          d1 = vec.rotate(vec.sub(p1,e1), -theta(tile, scaleY(absE1[0]), scaleX(absE1[1])));
+      var d0 = vec.rotate(vec.sub(p0,e0),  theta(tileset, tile, scaleX(absE0[0]), scaleY(absE0[1]))),
+          d1 = vec.rotate(vec.sub(p1,e1), -theta(tileset, tile, scaleY(absE1[0]), scaleX(absE1[1])));
 
       result.push([e0,vec.intersect(e0,d0,e1,d1),e1]);
     }

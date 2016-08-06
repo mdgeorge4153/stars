@@ -89,13 +89,13 @@
 <pre>
 /**
  * returns the distance between the endpoints.
- * tile    is the tile currently being drawn.
- *         use tile[0] and tile[1] to get the row and column
+ * tileset is the [r,c] position of the whole repeating pattern
+ * tile    is the tile within that repeating pattern
  * x and y are the (absolute) position of the point,
  *         scaled to the range [0,1]
  * typical outputs are in the range [0,1)
  */
-function delta(tile,x,y) {
+function delta(tileset,tile,x,y) {
 </pre>&nbsp;&nbsp;<textarea id="delta" rows="10" cols="50" wrap="off">
 var s1 = d3.select('#s1').node().value;
 var s2 = d3.select('#s2').node().value;
@@ -112,13 +112,13 @@ return 2*s1-1;
 <pre>
 /**
  * returns the angle between the edges.
- * tile    is the tile currently being drawn.
- *         use tile[0] and tile[1] to get the row and column
+ * tileset is the [r,c] position of the whole repeating pattern
+ * tile    is the tile within that repeating pattern
  * x and y are the (absolute) position of the point,
  *         scaled to the range [0,1]
  * typical outputs are in the range [0,Math.PI)
  */
-function theta(tile,x,y) {
+function theta(tileset,tile,x,y) {
 </pre>
 &nbsp;&nbsp;<textarea id="theta"rows="10" cols="50" wrap="off">
 var s1 = d3.select('#s1').node().value;

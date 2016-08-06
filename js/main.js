@@ -25,8 +25,8 @@ function update() {
       tiles.push([i,j]);
   pattern.tiles(tiles);
 
-  pattern.delta(new Function('tile','x','y',params.delta));
-  pattern.theta(new Function('tile','x','y',params.theta));
+  pattern.delta(new Function('tileset','tile','x','y',params.delta));
+  pattern.theta(new Function('tileset','tile','x','y',params.theta));
 
   document.getElementById('svg-style').innerHTML = params.style;
 
