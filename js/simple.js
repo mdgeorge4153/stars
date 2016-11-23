@@ -41,9 +41,11 @@ function update() {
 
   document.getElementById("deltaBot"     ).disabled = params.deltaLock;
   document.getElementById("deltaBotValue").disabled = params.deltaLock;
+  document.getElementById("deltaSmooth"  ).disabled = params.deltaLock;
 
   document.getElementById("thetaBot"     ).disabled = params.thetaLock;
   document.getElementById("thetaBotValue").disabled = params.thetaLock;
+  document.getElementById("thetaSmooth"  ).disabled = params.thetaLock;
 
   if (params.deltaLock) {
     document.getElementById("deltaBot").value = document.getElementById("deltaTop").value;
