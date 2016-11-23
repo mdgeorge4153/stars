@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+  <meta charset="UTF-8">
+  <title>Islamic star pattern generator</title>
+  <script src="js/require.js" data-main="js/main.js"></script>
+
+  <style>
+    th {
+      text-align: right;
+      width: 3em;
+    }
+
+    input[type="range"] {
+      width: 2in;
+    }
+
+    input[type="number"] {
+      width: 3em;
+      border: .5pt solid lightgray;
+      padding: 2pt;
+    }
+
+    #controls {
+      display: inline-block;
+      width: 50%;
+    }
+
+    #display {
+      position: absolute;
+      left: 50%;
+      top:   1%;
+      display: inline-block;
+      border: 1px solid black;
+    }
+  </div>
+  </style>
+
+<body>
+
+<!-- *********************************************************************** -->
+
+<div id="controls">
+  <div id="theta-controls">
+    <h2>Angle</h2>
+    <table>
+      <tr><th>top:</th>
+          <td><input type="range"  id="theta-top"       value="0.00" min="0" max="1" step=".01"/></td>
+          <td><input type="number" id="theta-top-value" value="0.00" min="0" max="1" step=".01"/></td></tr>
+      <tr><th>bot:</th>
+          <td><input type="range"  id="theta-bot"       value="0.00" min="0" max="1" step=".01"/></td>
+          <td><input type="number" id="theta-bot-value" value="0.00" min="0" max="1" step=".01"/></td>
+          <td><input type="checkbox" id="theta-lock"/> lock</td></tr>
+      <tr><th>interp:</th>
+          <td><select id="theta-smooth">
+            <option>Smooth transitions</option>
+            <option>Symmetric tiles</option>
+            </select></td></tr></table></div>
+
+<!-- *********************************************************************** -->
+
+  <div id="delta-controls">
+    <h2>Spacing</h2>
+    <table>
+      <tr><th>top:</th>
+          <td><input type="range"  id="delta-top"       value="0.00" min="-1" max="1" step=".01"/></td>
+          <td><input type="number" id="delta-top-value" value="0.00" min="-1" max="1" step=".01"/></td></tr>
+      <tr><th>bot:</th>
+          <td><input type="range"  id="delta-bot"       value="0.00" min="-1" max="1" step=".01"/></td>
+          <td><input type="number" id="delta-bot-value" value="0.00" min="-1" max="1" step=".01"/></td>
+          <td><input type="checkbox" id="delta-lock"/> lock</td></tr>
+      <tr><th>interp:</th>
+          <td><select id="delta-smooth">
+            <option>Smooth transitions</option>
+            <option>Symmetric tiles</option>
+            </select></td></tr></table></div>
+
+<!-- *********************************************************************** -->
+  <div id="shape-controls">
+    <h2>Shape</h2>
+    <table>
+      <tr><th>rows:</th>
+          <td><input type="number" id="rows" value="15" step="1"></input></td></tr>
+      <tr><th>cols:</th>
+          <td><input type="number" id="cols" value="4" step="1"></input></td></tr>
+      <tr><th>shape:</th>
+          <td><select id="shape">
+            <option value="hex">Hexagons</option>
+            <option value="oct">Octagons</option>
+            <option value="dodec">Dodecahedra</option>
+            <option value="ddodec" selected="true">Doubled Dodecahedra</option>
+            </select></td></tr></table></div>
+
+</div> <!-- controls -->
+    
+<!-- *********************************************************************** -->
+
+<div id="display">
+  <a download="pattern.svg" id="download">
+    <svg id="drawing" width="300" height="500">
+      <rect width="100%" height="100%" style="fill: blue"/>
+      </svg></a>
+</div>
+
+<!--
+vim: ts=2 sw=2 ai et
+-->
+
