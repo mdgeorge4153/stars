@@ -2,8 +2,8 @@
  * set up the UI, handle interaction
  */
 
-require(["lib/d3", "pattern", "params", "shapes"],
-function(d3, IslamicPattern, Params, Shapes) {
+require(["lib/d3", "pattern", "params", "shapes", "export-svg"],
+function(d3, IslamicPattern, Params, Shapes, svgAsLink) {
 
 var pattern = IslamicPattern();
 var params  = new Params([
@@ -66,6 +66,11 @@ function update() {
   pattern.tiles(tiles);
 
   d3.select("#drawing").call(pattern);
+
+  d3.selectAll(".structure")
+    .attr("style",params.structure ? "stroke:blue" : "stroke:none");
+
+  d3.select("#download").attr("href", svgAsLink(d3.select("#drawing").node()));
 }
 
 params.onchange(update);

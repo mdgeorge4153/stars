@@ -68,11 +68,11 @@
       <tr><th>bot:</th>
           <td><input type="range"  id="thetaBot"       value="0.00" min="-3.14" max="3.14" step=".01"/></td>
           <td><input type="number" id="thetaBotValue" value="0.00" min="-3.14" max="3.14" step=".01"/></td>
-          <td><input type="checkbox" id="thetaLock"/> lock</td></tr>
+          <td><input type="checkbox" id="thetaLock" checked="true"/> lock</td></tr>
       <tr><th>interp:</th>
           <td><select id="thetaSmooth">
             <option value="smooth">Smooth transitions</option>
-            <option value="symmetric">Symmetric tiles</option>
+            <option value="symmetric" selected="true">Symmetric tiles</option>
             </select></td></tr></table></div>
 
 <!-- *********************************************************************** -->
@@ -86,11 +86,11 @@
       <tr><th>bot:</th>
           <td><input type="range"  id="deltaBot"       value="0.00" min="-1" max="1" step=".01"/></td>
           <td><input type="number" id="deltaBotValue" value="0.00" min="-1" max="1" step=".01"/></td>
-          <td><input type="checkbox" id="deltaLock"/> lock</td></tr>
+          <td><input type="checkbox" id="deltaLock" checked="true"/> lock</td></tr>
       <tr><th>interp:</th>
           <td><select id="deltaSmooth">
             <option value="smooth">Smooth transitions</option>
-            <option value="symmetric">Symmetric tiles</option>
+            <option value="symmetric" selected="true">Symmetric tiles</option>
             </select></td></tr></table></div>
 
 <!-- *********************************************************************** -->
@@ -116,7 +116,7 @@
     <h2>File</h2>
     <input type="file" id="load"></input><br/>
     <a download="params-simple.json" id="save">Save params</a>
-
+    <a download="pattern.svg" id="download">Download svg</a></div>
 
 </div> <!-- controls -->
     
