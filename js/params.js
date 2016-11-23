@@ -20,8 +20,13 @@ define([], function() { return function(params, loadButtonId, storeLinkId) {
   var obj = this;
 
   function update() {
-    for (var i in params)
-      obj[params[i]] = document.getElementById(params[i]).value;
+    for (var i in params) {
+      control = document.getElementById(params[i]);
+      if (control.getAttribute("type") == "checkbox")
+        obj[params[i]] = control.checked;
+      else
+        obj[params[i]] = control.value;
+    }
 
     for (var i in callbacks)
       callbacks[i](this);

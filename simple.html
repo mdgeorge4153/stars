@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Islamic star pattern generator</title>
-  <script src="js/require.js" data-main="js/main.js"></script>
+  <script src="js/require.js" data-main="js/simple.js"></script>
 
   <style>
     th {
@@ -14,13 +14,14 @@
     }
 
     input[type="range"] {
-      width: 2in;
+      width: 2.5in;
     }
 
     input[type="number"] {
-      width: 3em;
+      width: 4em;
       border: .5pt solid lightgray;
       padding: 2pt;
+      text-align: right;
     }
 
     #controls {
@@ -29,11 +30,22 @@
     }
 
     #display {
-      position: absolute;
-      left: 50%;
-      top:   1%;
+      float: right;
+      width: 350;
       display: inline-block;
       border: 1px solid black;
+    }
+
+    .structure {
+      fill: none;
+      stroke: blue;
+      stroke-width: 0.02;
+    }
+
+    .pattern {
+      fill: none;
+      stroke: black;
+      stroke-width: 0.02;
     }
   </div>
   </style>
@@ -42,21 +54,25 @@
 
 <!-- *********************************************************************** -->
 
+<div id="display">
+  <svg id="drawing" width="300" height="500"> </svg>
+  </div>
+
 <div id="controls">
   <div id="theta-controls">
     <h2>Angle</h2>
     <table>
       <tr><th>top:</th>
-          <td><input type="range"  id="theta-top"       value="0.00" min="0" max="1" step=".01"/></td>
-          <td><input type="number" id="theta-top-value" value="0.00" min="0" max="1" step=".01"/></td></tr>
+          <td><input type="range"  id="thetaTop"       value="0.00" min="-3.14" max="3.14" step=".01"/></td>
+          <td><input type="number" id="thetaTopValue" value="0.00" min="-3.14" max="3.14" step=".01"/></td></tr>
       <tr><th>bot:</th>
-          <td><input type="range"  id="theta-bot"       value="0.00" min="0" max="1" step=".01"/></td>
-          <td><input type="number" id="theta-bot-value" value="0.00" min="0" max="1" step=".01"/></td>
-          <td><input type="checkbox" id="theta-lock"/> lock</td></tr>
+          <td><input type="range"  id="thetaBot"       value="0.00" min="-3.14" max="3.14" step=".01"/></td>
+          <td><input type="number" id="thetaBotValue" value="0.00" min="-3.14" max="3.14" step=".01"/></td>
+          <td><input type="checkbox" id="thetaLock"/> lock</td></tr>
       <tr><th>interp:</th>
-          <td><select id="theta-smooth">
-            <option>Smooth transitions</option>
-            <option>Symmetric tiles</option>
+          <td><select id="thetaSmooth">
+            <option value="smooth">Smooth transitions</option>
+            <option value="symmetric">Symmetric tiles</option>
             </select></td></tr></table></div>
 
 <!-- *********************************************************************** -->
@@ -65,16 +81,16 @@
     <h2>Spacing</h2>
     <table>
       <tr><th>top:</th>
-          <td><input type="range"  id="delta-top"       value="0.00" min="-1" max="1" step=".01"/></td>
-          <td><input type="number" id="delta-top-value" value="0.00" min="-1" max="1" step=".01"/></td></tr>
+          <td><input type="range"  id="deltaTop"       value="0.00" min="-1" max="1" step=".01"/></td>
+          <td><input type="number" id="deltaTopValue" value="0.00" min="-1" max="1" step=".01"/></td></tr>
       <tr><th>bot:</th>
-          <td><input type="range"  id="delta-bot"       value="0.00" min="-1" max="1" step=".01"/></td>
-          <td><input type="number" id="delta-bot-value" value="0.00" min="-1" max="1" step=".01"/></td>
-          <td><input type="checkbox" id="delta-lock"/> lock</td></tr>
+          <td><input type="range"  id="deltaBot"       value="0.00" min="-1" max="1" step=".01"/></td>
+          <td><input type="number" id="deltaBotValue" value="0.00" min="-1" max="1" step=".01"/></td>
+          <td><input type="checkbox" id="deltaLock"/> lock</td></tr>
       <tr><th>interp:</th>
-          <td><select id="delta-smooth">
-            <option>Smooth transitions</option>
-            <option>Symmetric tiles</option>
+          <td><select id="deltaSmooth">
+            <option value="smooth">Smooth transitions</option>
+            <option value="symmetric">Symmetric tiles</option>
             </select></td></tr></table></div>
 
 <!-- *********************************************************************** -->
@@ -82,7 +98,7 @@
     <h2>Shape</h2>
     <table>
       <tr><th>rows:</th>
-          <td><input type="number" id="rows" value="15" step="1"></input></td></tr>
+          <td><input type="number" id="rows" value="8" step="1"></input></td></tr>
       <tr><th>cols:</th>
           <td><input type="number" id="cols" value="4" step="1"></input></td></tr>
       <tr><th>shape:</th>
@@ -91,18 +107,23 @@
             <option value="oct">Octagons</option>
             <option value="dodec">Dodecahedra</option>
             <option value="ddodec" selected="true">Doubled Dodecahedra</option>
-            </select></td></tr></table></div>
+            </select></td></tr>
+      <tr><th>structure</th>
+          <td><input id="structure" type="checkbox"/></td></tr></table></div>
+
+<!-- *********************************************************************** -->
+  <div id="file-controls">
+    <h2>File</h2>
+    <input type="file" id="load"></input><br/>
+    <a download="params-simple.json" id="save">Save params</a>
+
 
 </div> <!-- controls -->
     
 <!-- *********************************************************************** -->
 
-<div id="display">
-  <a download="pattern.svg" id="download">
-    <svg id="drawing" width="300" height="500">
-      <rect width="100%" height="100%" style="fill: blue"/>
-      </svg></a>
-</div>
+</body>
+</html>
 
 <!--
 vim: ts=2 sw=2 ai et
